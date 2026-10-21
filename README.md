@@ -1,16 +1,18 @@
 # Antigravity-IDE-Auto-Setting
 
-本倉庫存放 Antigravity / Antigravity IDE 的**全域工程審核規則（Global Rules）與技能組（Global Skills）**，適用於跨軟體（C# / WPF / C++ / Python）、韌體、通訊協定（eDP / USB / I2C / SPI / Register Map）與硬體 RTL（Verilog / SystemVerilog / VHDL / FPGA）專案。
+本倉庫存放 Antigravity / Antigravity IDE 的**全域工程審核規則（Global Rules）、技能組（Global Skills）與專案導入通用提示詞手冊（Templates）**，適用於跨軟體（C# / WPF / C++ / Python）、韌體、通訊協定（USB / eDP / I2C / SPI / Register Map）與硬體 RTL（Verilog / SystemVerilog / VHDL / FPGA）專案。
 
 ---
 
 ## 一、 目錄結構
 
-將本倉庫掛載至使用者家目錄下的 `~/.gemini/config` 後，結構如下：
+掛載至本機 `~/.gemini/config` 後，目錄結構如下：
 
 ```text
 ~/.gemini/config/
-├── README.md                                              # 跨電腦掛載與同步說明
+├── README.md                                              # 跨電腦掛載、同步與手冊導覽
+├── templates/
+│   └── project-onboarding-prompts.md                      # 三大情境專案導入通用提示詞手冊 (含 XXXX 填空範本)
 ├── rules/
 │   └── engineering-governance.md                          # 全域工程治理規則 (trigger: always_on)
 └── skills/
@@ -39,58 +41,47 @@
 
 ---
 
-## 二、 在其他電腦（新電腦）一鍵掛載方式
+## 二、 如何使用「專案導入通用提示詞手冊」
 
-Antigravity 的全域設定認本機的 `~/.gemini/config` 路徑。換到新電腦時，請任選以下一種方式掛載：
+當您要啟動專案時，打開 `~/.gemini/config/templates/project-onboarding-prompts.md`，依情境複製範本，填入對應的專案資訊即可：
 
-### 方式 1：直接貼提示詞給新電腦的 Antigravity IDE 自動掛載
-打開新電腦的 Antigravity IDE（File -> Open Folder 開啟使用者家目錄），在 Agent 模式貼上：
+| 情境編號 | 適用場景 | 核心動作 |
+|---|---|---|
+| **情境 1** | 全新專案開發 | 建立專案骨幹、初始化 Git、綁定 GitHub 私人庫、產生 `GEMINI.md` |
+| **情境 2** | 舊專案納管至 GitHub | 建立本地備份、唯讀逆向分析、產出 `docs/` 01~03 架構/通訊文件並推送 |
+| **情境 3** | 現有專案升級 AI 規範 | 保留原始功能，升級 `GEMINI.md`、`Change_Log.md` 與驗證覆蓋矩陣 |
 
-> 請幫我將這台電腦的 Antigravity 全域設定（`~/.gemini/config`）掛載並同步自我的 GitHub 倉庫：`https://github.com/sung1102/Antigravity-IDE-Auto-Setting.git`
-> 1. 若本機 `~/.gemini/config` 已存在，請先備份至 `~/.gemini/backup_YYYYMMDD_HHMMSS`。
-> 2. 將 `https://github.com/sung1102/Antigravity-IDE-Auto-Setting.git` clone 到本機的 `~/.gemini/config`。
-> 3. 驗證 `rules/` 與 `skills/` 底下的檔案皆已就緒並向我回報。
+所有範本內的 `XXXX` 均為填空佔位符，替換為實際名稱後直接貼入 Antigravity IDE 對話框即可執行。
 
-### 方式 2：使用終端機指令快速掛載
+---
 
-#### Windows (PowerShell)
+## 三、 在新電腦上一鍵掛載
+
+換到新電腦時，在終端機執行對應指令即可完成部署：
+
+### Windows (PowerShell)
 ```powershell
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-if (Test-Path "$HOME\.gemini\config") {
-    Move-Item "$HOME\.gemini\config" "$HOME\.gemini\backup_$timestamp"
-}
+if (Test-Path "$HOME\.gemini\config") { Move-Item "$HOME\.gemini\config" "$HOME\.gemini\backup_$timestamp" }
 git clone https://github.com/sung1102/Antigravity-IDE-Auto-Setting.git "$HOME\.gemini\config"
 ```
 
-#### macOS / Linux (Bash)
+### macOS / Linux (Bash)
 ```bash
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-if [ -d "$HOME/.gemini/config" ]; then
-    mv "$HOME/.gemini/config" "$HOME/.gemini/backup_$TIMESTAMP"
-fi
+[ -d "$HOME/.gemini/config" ] && mv "$HOME/.gemini/config" "$HOME/.gemini/backup_$TIMESTAMP"
 git clone https://github.com/sung1102/Antigravity-IDE-Auto-Setting.git "$HOME/.gemini/config"
 ```
 
 ---
 
-## 三、 日常跨電腦同步更新指令
+## 四、 跨電腦同步更新
 
-- **拉取最新規則與技能（在其他電腦）**：
+- **在新電腦拉取最新設定與手冊**：
   ```bash
   cd ~/.gemini/config && git pull origin main
   ```
-- **推送修改後的規則與技能**：
+- **推送修改後的設定或範本**：
   ```bash
-  cd ~/.gemini/config
-  git add .
-  git commit -m "chore: update engineering skills"
-  git push origin main
+  cd ~/.gemini/config && git add . && git commit -m "chore: update config" && git push origin main
   ```
-
----
-
-## 四、 專案開發與同名備份對應規則
-
-日常開啟任何工程專案時，Agent 會依 `change-safety-and-verification` 自動遵守**「同名一對一映射原則」**：
-- **本地專案資料夾名稱（或主專案檔名）** = **GitHub 私人倉庫名稱** = **本地時間戳備份前綴名稱**（`<ProjectName>_backup_YYYYMMDD_HHMMSS`）。
-- 人工查閱時可直接以專案名稱在本地端與 GitHub 遠端之間一對一直覺檢索。
