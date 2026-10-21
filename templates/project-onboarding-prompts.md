@@ -53,8 +53,8 @@
 - 凍結不可動之黃金路徑：XXXX_需保留的既有介面或暫存器契約
 
 【請依序執行以下流程】
-1. 建立本機同名時間戳備份：XXXX_舊專案名稱_backup_YYYYMMDD_HHMMSS。
-2. 掃描大型暫存檔（編譯暫存、波形、.runs、bin/obj），產生專屬 .gitignore。
+1. 檢查本機 Git 狀態。若尚未建立 Git，先建立適當的 .gitignore（排除暫存與編譯垃圾），執行 git init 並 commit 作為原始基準版本（Baseline）；絕不額外複製整包實體備份資料夾。
+2. 掃描大型暫存檔（編譯暫存、波形、.runs、bin/obj），確認 .gitignore 完整防護。
 3. 執行 MODE: TRACE_ONLY 深度分析（調用 software/rtl/protocol 審核技能），生成下列文件：
    - docs/01_Hardware_RTL_Architecture.md：模組階層、Clock/Reset、FSM 與資料流（若無 RTL 則略過）。
    - docs/02_Software_Architecture.md：UI/業務呼叫鏈、核心模組、通訊包裝層。
@@ -62,10 +62,9 @@
 4. 在專案根目錄建立 GEMINI.md 專案記憶索引：
    - 摘要系統架構與關鍵通訊參數。
    - 明確設定紅線指示：後續 AI 進入本專案處理問題時，強制先讀取 docs/ 內之技術文件作為事實基準，不重複全盤掃描。
-5. 初始化 Git 並推送到 GitHub 私人倉庫：
-   git init
+5. 推送到同名 GitHub 私人倉庫：
    git add .
-   git commit -m "first commit: import XXXX_舊專案名稱 with full architecture baseline docs"
+   git commit -m "docs: generate architecture baseline documents for XXXX_舊專案名稱"
    git branch -M main
    git remote add origin https://github.com/XXXX_GITHUB帳號/XXXX_舊專案名稱.git
    git push -u origin main

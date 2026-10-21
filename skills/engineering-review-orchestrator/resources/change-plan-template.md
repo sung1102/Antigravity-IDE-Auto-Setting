@@ -18,7 +18,7 @@
 ## 3. 同名備份與回滾策略 (1-to-1 Named Backup & Rollback Plan)
 - **本地專案目錄 / 主檔名**：`<Project_Key_Name>`
 - **對應 GitHub 私人倉庫名稱**：`<GitHub_Account>/<Project_Key_Name>.git`（確保同名對應）
-- **預計備份分支 / 本機備份名稱**：`<Project_Key_Name>_backup_YYYYMMDD_HHMMSS`
+- **預計 Git 備份分支 / Tag 名稱**：`backup/<Project_Key_Name>_YYYYMMDD_HHMMSS`（Git 專案嚴禁實體拷貝）
 - **一鍵回滾指令**：
 
 ## 4. 分階段實作計畫 (Phased Implementation Steps)
