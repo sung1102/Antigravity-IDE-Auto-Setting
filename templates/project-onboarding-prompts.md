@@ -59,12 +59,15 @@
    - docs/01_Hardware_RTL_Architecture.md：模組階層、Clock/Reset、FSM 與資料流（若無 RTL 則略過）。
    - docs/02_Software_Architecture.md：UI/業務呼叫鏈、核心模組、通訊包裝層。
    - docs/03_Protocol_and_Register_Map.md：封包格式、Length 定義、暫存器對照表。
-4. 在專案根目錄建立 GEMINI.md 專案記憶索引：
-   - 摘要系統架構與關鍵通訊參數。
-   - 明確設定紅線指示：後續 AI 進入本專案處理問題時，強制先讀取 docs/ 內之技術文件作為事實基準，不重複全盤掃描。
+4. 在專案根目錄建立/維護治理文件：
+   - 建立 GEMINI.md 專案記憶索引：摘要系統架構、通訊參數與紅線指示（強制先讀 docs/ 不全盤盲掃）。
+   - 建立或追加 Change_Log.md（Append-Only 原則）：
+     * 若舊專案無此檔：新建並寫入第一筆「[YYYY-MM-DD] 專案轉移納管至 GitHub，完成 FPGA/軟體/通訊架構基準文件分析」。
+     * 若舊專案已有此檔：保留全部歷史紀錄，僅在最末尾追加本次納管紀錄。
+   - 建立 VerificationCoverageMatrix.md：依逆向分析出之核心功能建立驗證矩陣骨幹（標記當前真實狀態或 NOT RUN）。
 5. 推送到同名 GitHub 私人倉庫：
    git add .
-   git commit -m "docs: generate architecture baseline documents for XXXX_舊專案名稱"
+   git commit -m "docs: import XXXX_舊專案名稱 with architecture docs, Change_Log and GEMINI.md"
    git branch -M main
    git remote add origin https://github.com/XXXX_GITHUB帳號/XXXX_舊專案名稱.git
    git push -u origin main
