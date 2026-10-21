@@ -1,0 +1,9 @@
+# Local machine sensitive and transient files
+config.json
+mcp_config.json
+node_modules/
+projects/
+sidecars/
+plugins/
+.migrated
+backup_*
