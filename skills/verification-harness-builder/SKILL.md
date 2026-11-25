@@ -73,3 +73,4 @@ description: 專案級可執行驗證槓桿（Verification Lever）、行為級 
 ## 五、 模板參考
 - 行為級功能與驗證地圖模板：`resources/feature-map-template.md`
 - 專案專屬驗證技能模板：`resources/verify-skill-template.md`
+- 跨技術棧決定性護欄實戰範本：`resources/guardrail-snippets.md`

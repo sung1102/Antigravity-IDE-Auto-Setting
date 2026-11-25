@@ -25,7 +25,9 @@
 - **Stage 1**：修改範圍 → 預期 `git diff` 檢查點 → 階段驗證命令
 - **Stage 2**：修改範圍 → 預期 `git diff` 檢查點 → 階段驗證命令
 
-## 5. 驗收條件與測試計畫 (Acceptance Criteria & Verification)
-- **原始問題修復驗證**：
-- **邊界條件與錯誤路徑測試**：
-- **回歸測試項目**：
+## 5. 可量測驗收條件與測試計畫 (Measurable Acceptance Criteria & Verification)
+- **目標重述與不變紅線 (In-Your-Own-Words)**：`<一句話確認核心目標與絕對不可破壞的既有契約>`
+- **新行為直接證明 (New Behavior Proof)**：`<具體指令 / Replay / 模擬步驟與預期可觀察硬證據>`
+- **既有功能回歸測試 (Regression Scope)**：`<確保未破壞黃金路徑之測試範圍>`
+- **邊界條件與錯誤路徑測試**：`<超時、斷線、異常封包、邊界值測試>`
+- **獨立盲審需求 (Blind Verification)**：`[ 低風險單輪驗證 | 高風險建議獨立視角檢視 Diff 與證據 ]`

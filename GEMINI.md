@@ -23,7 +23,7 @@
 | `skills/protocol-stack-contract-review/` | 通訊協定、USB/FIFO、Register Map、ACK 語義審核 | `SKILL.md`, `resources/protocol-checklist.md` | `/protocol-stack-contract-review` 或封包/長度/暫存器關鍵字 |
 | `skills/change-safety-and-verification/` | 變更安全、Git 優先回滾備份、真實驗證制度 | `SKILL.md`, `resources/verification-template.md` | 改動程式碼（`IMPLEMENT`）或驗證時強制調用 |
 | `skills/observed-baseline-and-ssot-sync/` | 實測 100% 仿照優先、可疑先提報與 SSOT 回溯同步 | `SKILL.md`, `resources/baseline-ssot-checklist.md`, `resources/suspicious-behavior-report-template.md` | 涉及 LA/示波器/抓包實測或修正既有規格/Bug 時強制調用 |
-| `skills/verification-harness-builder/` | 專案驗證槓桿（Verification Lever）、Feature Map 與錯誤硬化 | `SKILL.md`, `resources/feature-map-template.md`, `resources/verify-skill-template.md` | 建置專案自動驗證入口、Feature Map 或重複錯誤硬化時調用 |
+| `skills/verification-harness-builder/` | 專案驗證槓桿（Verification Lever）、Feature Map 與錯誤硬化 | `SKILL.md`, `resources/feature-map-template.md`, `resources/verify-skill-template.md`, `resources/guardrail-snippets.md` | 建置專案自動驗證入口、Feature Map 或重複錯誤硬化時調用 |
 | `scripts/` | 本倉庫自動化靜態校驗槓桿 | `scripts/verify-repo.ps1` | 修改規則、技能或手冊後執行 `powershell -ExecutionPolicy Bypass -File .\scripts\verify-repo.ps1` |
 | `templates/` | 三大情境專案導入通用提示詞手冊 | `templates/project-onboarding-prompts.md` | 複製填入 `XXXX` 貼至 IDE 對話框 |
 | `README.md` | 跨電腦掛載、同步更新與手冊導覽說明 | `README.md` | 查閱一鍵掛載指令 |

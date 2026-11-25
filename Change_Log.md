@@ -78,3 +78,15 @@ This file is strictly **APPEND ONLY**. Never reorder, delete, or rewrite histori
   - Added deterministic self-verification script `scripts/verify-repo.ps1` checking rules frontmatter, skill directory/name alignment, relative resource links, markdown code fence pairing, `GEMINI.md`/`README.md` index synchronization, and `Change_Log.md` Append-Only integrity.
   - Added global skill `skills/verification-harness-builder/SKILL.md` with `resources/feature-map-template.md` and `resources/verify-skill-template.md` to establish project-level executable verification levers, behavior-level Feature Maps, Doc Drift vs Product Bug triage, and Prose-to-Guardrail error escalation.
   - Integrated references into `rules/engineering-governance.md`, `skills/engineering-review-orchestrator/SKILL.md`, `skills/change-safety-and-verification/SKILL.md`, `templates/project-onboarding-prompts.md`, `GEMINI.md`, and `README.md`.
+
+
+---
+
+## [2026-11-25] Enhance Orchestrator Collaboration, Change Hygiene, and Guardrail Snippets (Option B)
+- **Type**: Enhancement / Process & Verification Hardening
+- **Base Commit**: `d1cf786`
+- **Details**:
+  - Created Git safety backup branch `backup/Antigravity-IDE-Auto-Setting_20261125_183252`.
+  - Upgraded `skills/engineering-review-orchestrator/SKILL.md` and `resources/change-plan-template.md` with Phase 1/3 Sharpen & In-Your-Own-Words alignment, Phase 2 parallel read-only `research` subagent tracing, and Phase 5 `browser` verification + Blind Verification guidance.
+  - Upgraded `skills/change-safety-and-verification/SKILL.md` and `resources/verification-template.md` with Minimal Clean Diff & Unslop discipline, explicit separation of `Regression` vs `New Behavior Proof`, and `Guardrail Escalation` tracking.
+  - Added `skills/verification-harness-builder/resources/guardrail-snippets.md` providing deterministic templates for Git `pre-commit`, C#/WPF (`Directory.Build.props`, `.editorconfig`), RTL (`verilator`, `iverilog`/`vvp`), and Python (`ruff`, `pytest`), and indexed it in `SKILL.md`, `GEMINI.md`, and `README.md`.

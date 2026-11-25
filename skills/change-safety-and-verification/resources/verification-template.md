@@ -19,12 +19,14 @@
 | | | | 完整保留 / 需注意：... |
 
 ## 3. 驗證執行結果 (Verification Execution Matrix)
-| 驗證層級 (Build / Unit Test / Sim / Lint / Synth / Board) | 執行命令 | 狀態 (`PASS` / `FAIL` / `BLOCKED` / `NOT RUN`) | Exit Code | 真實證據摘要 (Log / 波形 / 報告路徑) |
-|---|---|---|---|---|
-| | | | | |
+| 證據類別 (`Regression` / `New Behavior` / `Static Gate`) | 驗證層級 (Build / Unit Test / Sim / Lint / Synth / Board) | 執行命令 | 狀態 (`PASS` / `FAIL` / `BLOCKED` / `NOT RUN`) | Exit Code | 真實證據摘要 (Log / 波形 / 報告路徑) |
+|---|---|---|---|---|---|
+| | | | | | |
 
-## 4. 文件更新與殘留風險 (Documentation & Residual Risks)
+## 4. 文件更新、重複錯誤硬化與殘留風險 (Docs, Guardrails & Residual Risks)
 - **Change_Log.md 更新**：[ 已採 Append-Only 更新於末尾 | 本次無需更新 ]
 - **VerificationCoverageMatrix.md 更新**：[ 已同步更新真實狀態 | 專案無此檔案 ]
+- **重複錯誤硬化升級 (Prose-to-Guardrail)**：[ 無新增重複錯誤 | 已硬化為 Compiler/Linter/Script/Test: `<位置>` ]
+- **獨立盲審狀態 (Blind Verification)**：[ 不適用（低風險） | 已由獨立視角核對 Diff 與硬證據 ]
 - **待確認事項 / 板端實測需求 (`UNKNOWN / NOT PROVEN`)**：
   - 

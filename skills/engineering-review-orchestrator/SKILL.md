@@ -41,15 +41,17 @@ description: 主控工程審核技能。當使用者以自然語言描述錯誤�
 
 - **Phase 1 — Intake / 專案理解**：
   - 用自然語言重述目標、可觀察症狀、預期結果與**不允許破壞的既有功能**。
+  - **需求精煉對齊（Sharpen & In-Your-Own-Words）**：若需求含糊、跨層或涉及多方案取捨，先以「不變紅線＋可量測驗收標準（Acceptance Criteria）」向使用者重述確認（必要時配合 `/grill-me` 或 `/plan`），未對齊前不進入改碼。
   - 掃描專案指示文件、變更紀錄、驗證矩陣與指定 log/trace。
   - 偵測專案 toolchain 並列出資料缺口，絕不自行補造規格。
 - **Phase 2 — Evidence / TRACE_ONLY**：
   - 從入口一路追到執行結果，指出實際檔案、symbol、行號、呼叫鏈、資料流、控制流或 RTL 訊號路徑。
+  - **多代理平行唯讀追查**：遇大型跨模組或軟硬體雙端追查時，可將獨立檔案鏈路交由唯讀 `research` 子代理平行追蹤，主代理專注彙整端到端證據，避免單一上下文塞滿而失焦。
   - 嚴格區分 `CONFIRMED`（有直接證據）、`INFERRED`（推論及根據）、`UNKNOWN / NOT PROVEN`（現有證據無法證明）。
   - 遇到失敗 log 時，先定位**第一個真實錯誤（First Root Failure）**與後續連鎖反應，不可把表面成功或 `BYPASS` 當成成功。
   - 證據不足時不得定案，必須指出「下一個最具區辨力的檢查點（檢視哪個 symbol/訊號/狀態、為何能區分假設、預期判定結果）」。
 - **Phase 3 — Decision / PLAN_ONLY**：
-  - 提供最小修正方案、候選方案與利弊、影響檔案與介面、回歸風險、驗收條件與測試方案。
+  - 提供最小修正方案、候選方案與利弊、影響檔案與介面、回歸風險、可量測驗收條件（區分 **Regression** 與 **New Behavior Proof**）與測試方案。
   - 明確區分「必要修正（Must-Fix）」與「可選改善（Nice-to-Have）」。
 - **Phase 4 — Backup + IMPLEMENT**：
   - 僅在使用者明確要求或授權時執行。
@@ -57,7 +59,8 @@ description: 主控工程審核技能。當使用者以自然語言描述錯誤�
   - 小步分階段修改，每階段後檢查 `git diff`。若發現實作與需求矛盾、需改動凍結元件或風險超預期，立即停止並回報。
 - **Phase 5 — VERIFY_ONLY / 驗收**：
   - 先跑最相關、低成本的驗證，再跑完整 build/test/sim/lint/synth/timing 與專案可執行驗證槓桿（如 `.agents/skills/verify-<project>/` 或本倉庫 `scripts/verify-repo.ps1`）。
-  - 驗證原始症狀、邊界條件、錯誤路徑與回歸，並核對 `docs/Feature_Map.md`（嚴格區分 Doc Drift 與 Product Bug，禁改地圖掩蓋缺陷）。
+  - **實機互動與獨立盲審（Blind Verification）**：Web/前端改動須透過 `browser` 子代理實測頁面操作、Console Errors 與 Network 狀態；高風險或大範圍改動後，宜由獨立子代理或乾淨上下文「僅檢視驗收標準＋`git diff`＋驗證輸出」進行盲審，防止自己改碼自己認證 `PASS` 的確認偏誤。
+  - 驗證原始症狀（New Behavior Proof）、邊界條件、錯誤路徑與既有回歸（Regression），並核對 `docs/Feature_Map.md`（嚴格區分 Doc Drift 與 Product Bug，禁改地圖掩蓋缺陷）。
   - 若本次修正改變了任何規格、參數、時序或修復既定認知，依 `observed-baseline-and-ssot-sync` 執行 **SSOT 回溯掃描**：同步更新或封存舊規格、JSON 設定與同名複本檔，避免後續 AI 誤用舊資料。
   - 更新 Append-only 變更紀錄與驗證覆蓋矩陣，回報 `PASS / FAIL / BLOCKED / NOT RUN`。
 

@@ -35,6 +35,9 @@ description: 變更安全保護、Git 優先版本回滾（嚴禁重複實體拷
    - 驗證失敗時立即停在安全狀態並分析根因，**嚴禁用大量額外猜測性修改掩蓋第一個錯誤**。
 2. **保護凍結元件與黃金路徑（Golden Path Protection）**：
    - 修改共用介面、核心傳輸引擎、共用解析器、全域時序/時脈/Reset、公共 API 或既有黃金路徑前，必須先提出 **Architecture Exception（架構例外與風險說明）** 並取得使用者明確同意。
+3. **最小純淨變更與反濫造守則（Minimal Clean Diff & Unslop Discipline）**：
+   - **禁止順手改動無關檔案**或進行未經授權的大規模格式化重排。
+   - **精簡註解原則（Only Non-Obvious Why）**：禁止在程式碼殘留 AI 敘事型廢話註解、過渡期被註解掉的舊碼或自我重複說明；僅保留「不顯而易見的原因（Why）」（如硬體時序根據、避免重踩之實測限制）。
 
 ## 三、 歷史紀錄與驗證覆蓋矩陣維護規則
 1. **`Change_Log.md` / `CHANGELOG.md` 採 APPEND ONLY（僅限末尾追加）**：
@@ -51,4 +54,5 @@ description: 變更安全保護、Git 優先版本回滾（嚴禁重複實體拷
 - **`BLOCKED`**：因缺少實體硬體板卡、EDA License、儀器或權限限制無法執行。
 - **`NOT RUN`**：本次尚未執行的測試、模擬或實測項目。
 - **鐵則**：硬體未上板實測前，板端驗證項目一律標為 `NOT RUN` 或 `BLOCKED`，**絕不可標記為 `PASS`**。
+- **證據分離原則**：驗證紀錄必須明確區分 **Regression（原有功能未退化）** 與 **New Behavior Proof（本次修復／新增功能的直接行為證明）**，嚴禁用僅通過舊測試來宣稱新修復已完成。
 - **可執行槓桿與錯誤硬化**：專案級驗證槓桿建置、`docs/Feature_Map.md` 維護與重複錯誤硬化升級（從文字規則轉為編譯器／Linter／腳本門檻），請搭配調用 `../verification-harness-builder/SKILL.md`。

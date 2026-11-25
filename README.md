@@ -48,7 +48,8 @@
         ├── SKILL.md
         └── resources/
             ├── feature-map-template.md
-            └── verify-skill-template.md
+            ├── verify-skill-template.md
+            └── guardrail-snippets.md
 ```
 
 ---
