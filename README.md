@@ -11,6 +11,8 @@
 ```text
 ~/.gemini/config/
 ├── README.md                                              # 跨電腦掛載、同步與手冊導覽
+├── scripts/
+│   └── verify-repo.ps1                                    # 本倉庫一鍵靜態驗證槓桿（Schema / 路徑 / 圍欄 / 索引 / Append-Only）
 ├── templates/
 │   └── project-onboarding-prompts.md                      # 三大情境專案導入通用提示詞手冊 (含 XXXX 填空範本)
 ├── rules/
@@ -33,15 +35,20 @@
     │   ├── SKILL.md
     │   └── resources/
     │       └── protocol-checklist.md
-    └── change-safety-and-verification/                    # E. 變更安全、版本備份與驗證技能
+    ├── change-safety-and-verification/                    # E. 變更安全、版本備份與驗證技能
+    │   ├── SKILL.md
+    │   └── resources/
+    │       └── verification-template.md
+    ├── observed-baseline-and-ssot-sync/                   # F. 實測原樣仿照與 SSOT 回溯同步技能
+    │   ├── SKILL.md
+    │   └── resources/
+    │       ├── baseline-ssot-checklist.md
+    │       └── suspicious-behavior-report-template.md
+    └── verification-harness-builder/                      # G. 專案驗證槓桿、Feature Map 與錯誤硬化技能
         ├── SKILL.md
         └── resources/
-            └── verification-template.md
-    └── observed-baseline-and-ssot-sync/                   # F. 實測原樣仿照與 SSOT 回溯同步技能
-        ├── SKILL.md
-        └── resources/
-            ├── baseline-ssot-checklist.md
-            └── suspicious-behavior-report-template.md
+            ├── feature-map-template.md
+            └── verify-skill-template.md
 ```
 
 ---
@@ -95,6 +102,10 @@ git clone https://github.com/sung1102/Antigravity-IDE-Auto-Setting.git "$HOME/.g
 - **在新電腦拉取最新設定與手冊**：
   ```bash
   cd ~/.gemini/config && git pull origin main
+  ```
+- **修改規則或技能後先跑一鍵自檢**（Windows PowerShell）：
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File .\scripts\verify-repo.ps1
   ```
 - **推送修改後的設定或範本**：
   ```bash

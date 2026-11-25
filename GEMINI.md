@@ -23,6 +23,8 @@
 | `skills/protocol-stack-contract-review/` | 通訊協定、USB/FIFO、Register Map、ACK 語義審核 | `SKILL.md`, `resources/protocol-checklist.md` | `/protocol-stack-contract-review` 或封包/長度/暫存器關鍵字 |
 | `skills/change-safety-and-verification/` | 變更安全、Git 優先回滾備份、真實驗證制度 | `SKILL.md`, `resources/verification-template.md` | 改動程式碼（`IMPLEMENT`）或驗證時強制調用 |
 | `skills/observed-baseline-and-ssot-sync/` | 實測 100% 仿照優先、可疑先提報與 SSOT 回溯同步 | `SKILL.md`, `resources/baseline-ssot-checklist.md`, `resources/suspicious-behavior-report-template.md` | 涉及 LA/示波器/抓包實測或修正既有規格/Bug 時強制調用 |
+| `skills/verification-harness-builder/` | 專案驗證槓桿（Verification Lever）、Feature Map 與錯誤硬化 | `SKILL.md`, `resources/feature-map-template.md`, `resources/verify-skill-template.md` | 建置專案自動驗證入口、Feature Map 或重複錯誤硬化時調用 |
+| `scripts/` | 本倉庫自動化靜態校驗槓桿 | `scripts/verify-repo.ps1` | 修改規則、技能或手冊後執行 `powershell -ExecutionPolicy Bypass -File .\scripts\verify-repo.ps1` |
 | `templates/` | 三大情境專案導入通用提示詞手冊 | `templates/project-onboarding-prompts.md` | 複製填入 `XXXX` 貼至 IDE 對話框 |
 | `README.md` | 跨電腦掛載、同步更新與手冊導覽說明 | `README.md` | 查閱一鍵掛載指令 |
 
@@ -39,3 +41,4 @@
 5. **Change_Log 嚴格 APPEND ONLY**：只能在末尾追加紀錄，嚴禁重排、改寫或刪除歷史。
 6. **誠實證據分級**：嚴格區分 `CONFIRMED`（有直接證據）、`INFERRED`（推論及根據）、`UNKNOWN / NOT PROVEN`（未證實）；測試結果非真實執行不得宣稱 `PASS`。
 7. **實測原樣仿照優先與 SSOT 回溯同步**：LA／抓包等實測行為必須先 100% 仿照再於外層變通，禁止擅自增刪控制步驟，有疑慮須停在 `PLAN_ONLY` 提報可疑點；中途修正確認後強制回溯掃描並同步或封存早期過時文件與同名複本。
+8. **可執行驗證槓桿與重複錯誤硬化**：每個專案須建置可實際執行驗證的槓桿（`.agents/skills/verify-<project>/` 與 `docs/Feature_Map.md`），同類錯誤重複出現時須硬化為編譯／Lint／腳本／測試門檻，禁止僅堆疊文字警告；本倉庫每次修改後強制執行 `powershell -ExecutionPolicy Bypass -File .\scripts\verify-repo.ps1`。

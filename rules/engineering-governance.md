@@ -7,7 +7,7 @@ trigger: always_on
 
 面對任何軟體、桌面/UI、後端/API、韌體/驅動、通訊協定或 RTL/FPGA/ASIC 工作時，必須嚴格遵守以下核心鐵則：
 
-1. **自動技能調度**：優先載入 `engineering-review-orchestrator` 主控技能，並依專案實證（而非僅憑資料夾名稱）調用 `software-architecture-review`、`rtl-hardware-review`、`protocol-stack-contract-review` 與 `change-safety-and-verification`。
+1. **自動技能調度**：優先載入 `engineering-review-orchestrator` 主控技能，並依專案實證（而非僅憑資料夾名稱）調用 `software-architecture-review`、`rtl-hardware-review`、`protocol-stack-contract-review`、`change-safety-and-verification`、`observed-baseline-and-ssot-sync` 與 `verification-harness-builder`。
 2. **模式明確與唯讀優先**：每次回覆開頭必須標示 `MODE: TRACE_ONLY | PLAN_ONLY | IMPLEMENT | VERIFY_ONLY`。遇到原因不明、跨層、協定、硬體時序、併發或高風險問題時，預設先 `TRACE_ONLY`，禁止猜測性修改程式碼。
 3. **實作前強制版本備份（Git 優先，嚴禁重複實體拷貝）**：
    - 任何改動程式碼、RTL、設定或規格前，必須先檢查 `git status`，保留使用者未提交變更。
@@ -17,7 +17,7 @@ trigger: always_on
    - 嚴禁擅自破壞既有功能、公共 API、協定契約或黃金路徑（Golden Path）。
    - `Change_Log.md` / `CHANGELOG.md` 一律採 **APPEND ONLY**（僅能附加於末尾，嚴禁刪除、重排或改寫歷史）。
    - 若專案有 `VerificationCoverageMatrix.md`，必須同步更新真實狀態，嚴禁填寫虛構測試結果。
-5. **證據分級與誠實回報**：嚴格區分 `CONFIRMED`（有直接證據）、`INFERRED`（推論與根據）、`UNKNOWN / NOT PROVEN`（現有證據無法證明）。未實際執行的測試標為 `NOT RUN`，環境受限標為 `BLOCKED`，無真實執行/模擬/合成/板端證據時，絕對不可宣稱 PASS。
+5. **證據分級與誠實回報**：嚴格區分 `CONFIRMED`（有直接證據）、`INFERRED`（推論與根據）、`UNKNOWN / NOT PROVEN`（現有證據無法證明）。驗證須優先依 `verification-harness-builder` 透過專案可執行驗證槓桿（Verification Lever）取得硬證據；未實際執行的測試標為 `NOT RUN`，環境受限標為 `BLOCKED`，無真實執行/模擬/合成/板端證據時，絕對不可宣稱 PASS。
 6. **實測基準 100% 仿照優先與 SSOT 回溯同步**：
    - 面對邏輯分析儀（LA）、示波器、抓包或實機實測行為，第一階段必須 **100% 原樣仿照**，驗證重現後方可於外層推理變通應用；嚴禁未經實測擅自增刪控制步驟，有疑慮僅能停留在 `PLAN_ONLY` 提出可疑點報告（詳見 `observed-baseline-and-ssot-sync`）。
    - 嚴格維護 **Tier 1（實測與線上已驗證碼）> Tier 2（同步規格）> Tier 3（歷史封存）** 單一事實基準；任何中途修正確認後，結案前強制回溯掃描並同步／封存過時文件、組態與複本，禁止後續 AI 繞回引用舊資料。

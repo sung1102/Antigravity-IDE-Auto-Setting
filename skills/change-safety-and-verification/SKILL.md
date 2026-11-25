@@ -51,3 +51,4 @@ description: 變更安全保護、Git 優先版本回滾（嚴禁重複實體拷
 - **`BLOCKED`**：因缺少實體硬體板卡、EDA License、儀器或權限限制無法執行。
 - **`NOT RUN`**：本次尚未執行的測試、模擬或實測項目。
 - **鐵則**：硬體未上板實測前，板端驗證項目一律標為 `NOT RUN` 或 `BLOCKED`，**絕不可標記為 `PASS`**。
+- **可執行槓桿與錯誤硬化**：專案級驗證槓桿建置、`docs/Feature_Map.md` 維護與重複錯誤硬化升級（從文字規則轉為編譯器／Linter／腳本門檻），請搭配調用 `../verification-harness-builder/SKILL.md`。

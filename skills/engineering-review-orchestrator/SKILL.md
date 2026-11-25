@@ -16,6 +16,7 @@ description: 主控工程審核技能。當使用者以自然語言描述錯誤�
    - **軟硬體共同系統 / 混合型專案** → 同時調用上述相關技能進行跨層交集審查。
    - **涉及 LA / 示波器 / 抓包實測逆向分析、或規格／參數／Bug 修正** → 強制調用 `observed-baseline-and-ssot-sync`（確保先 100% 原樣仿照、有可疑先提報不擅自增刪，且修正確認後回溯同步早期文件與複本）。
    - **涉及任何專案初始化、檔案修改、備份、歷史紀錄或測試驗證** → 強制調用 `change-safety-and-verification`。
+   - **建置專案可執行驗證槓桿（`.agents/skills/verify-<project>/`）、`docs/Feature_Map.md` 或同類錯誤重複發生需硬化為靜態／自動檢查** → 調用 `verification-harness-builder`。
 
 ## 二、 工作模式（MODE）自動判定規則
 依使用者自然語言意圖與風險高低，自動選擇以下四種模式之一，並在回覆第一行明確標示：
@@ -55,8 +56,8 @@ description: 主控工程審核技能。當使用者以自然語言描述錯誤�
   - 依 `change-safety-and-verification` 先建立 Git 回滾點（優先建立 Git 分支/標籤並同步至同名 GitHub 私人倉庫，嚴禁在硬碟重複建立實體備份資料夾）。
   - 小步分階段修改，每階段後檢查 `git diff`。若發現實作與需求矛盾、需改動凍結元件或風險超預期，立即停止並回報。
 - **Phase 5 — VERIFY_ONLY / 驗收**：
-  - 先跑最相關、低成本的驗證，再跑完整 build/test/sim/lint/synth/timing。
-  - 驗證原始症狀、邊界條件、錯誤路徑與回歸。
+  - 先跑最相關、低成本的驗證，再跑完整 build/test/sim/lint/synth/timing 與專案可執行驗證槓桿（如 `.agents/skills/verify-<project>/` 或本倉庫 `scripts/verify-repo.ps1`）。
+  - 驗證原始症狀、邊界條件、錯誤路徑與回歸，並核對 `docs/Feature_Map.md`（嚴格區分 Doc Drift 與 Product Bug，禁改地圖掩蓋缺陷）。
   - 若本次修正改變了任何規格、參數、時序或修復既定認知，依 `observed-baseline-and-ssot-sync` 執行 **SSOT 回溯掃描**：同步更新或封存舊規格、JSON 設定與同名複本檔，避免後續 AI 誤用舊資料。
   - 更新 Append-only 變更紀錄與驗證覆蓋矩陣，回報 `PASS / FAIL / BLOCKED / NOT RUN`。
 

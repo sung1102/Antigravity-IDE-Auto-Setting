@@ -66,3 +66,15 @@ This file is strictly **APPEND ONLY**. Never reorder, delete, or rewrite histori
   - Enforced Replicate-First discipline for LA/oscilloscope/packet captures: replicate observed behavior 100% before outer-layer adaptation; prohibit unauthorized addition/removal of control steps; mandate `PLAN_ONLY` suspicious-behavior reporting before altering observed sequences.
   - Enforced Truth Priority Hierarchy (Tier 1 > Tier 2 > Tier 3) and mandatory Retroactive Sweep on confirmation to update or deprecate stale docs, configs, and duplicate snapshots.
   - Integrated references into `rules/engineering-governance.md`, `engineering-review-orchestrator`, `protocol-stack-contract-review`, `change-safety-and-verification`, `templates/project-onboarding-prompts.md`, `GEMINI.md`, and `README.md`.
+
+
+---
+
+## [2026-11-25] Add Repo Self-Verification Lever & Verification Harness Builder Skill
+- **Type**: Feature / Verification & Guardrail Enhancement
+- **Base Commit**: `b5f2db6`
+- **Details**:
+  - Synced workspace and GitVault mirror from `48ea74d` to `b5f2db6` (`observed-baseline-and-ssot-sync`) and created backup branch `backup/Antigravity-IDE-Auto-Setting_20261125_165735`.
+  - Added deterministic self-verification script `scripts/verify-repo.ps1` checking rules frontmatter, skill directory/name alignment, relative resource links, markdown code fence pairing, `GEMINI.md`/`README.md` index synchronization, and `Change_Log.md` Append-Only integrity.
+  - Added global skill `skills/verification-harness-builder/SKILL.md` with `resources/feature-map-template.md` and `resources/verify-skill-template.md` to establish project-level executable verification levers, behavior-level Feature Maps, Doc Drift vs Product Bug triage, and Prose-to-Guardrail error escalation.
+  - Integrated references into `rules/engineering-governance.md`, `skills/engineering-review-orchestrator/SKILL.md`, `skills/change-safety-and-verification/SKILL.md`, `templates/project-onboarding-prompts.md`, `GEMINI.md`, and `README.md`.

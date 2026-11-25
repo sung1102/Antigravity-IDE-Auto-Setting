@@ -1,0 +1,278 @@
+<#
+.SYNOPSIS
+    Deterministic repository verification lever for Antigravity-IDE-Auto-Setting.
+.DESCRIPTION
+    Validates rules frontmatter, skill schema and folder-name alignment,
+    relative path integrity, markdown code fence pairing, GEMINI/README index
+    synchronization, and Change_Log.md append-only invariants.
+    Compatible with Windows PowerShell 5.1+ and PowerShell 7+.
+#>
+[CmdletBinding()]
+param(
+    [string]$RepoRoot = '',
+    [switch]$SkipGitAppendCheck
+)
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
+    $scriptDir = if (-not [string]::IsNullOrWhiteSpace($PSScriptRoot)) {
+        $PSScriptRoot
+    } elseif ($MyInvocation.MyCommand.Path) {
+        Split-Path -Parent $MyInvocation.MyCommand.Path
+    } else {
+        (Get-Location).Path
+    }
+    $RepoRoot = Split-Path -Parent $scriptDir
+}
+$RepoRoot = (Resolve-Path $RepoRoot).Path
+
+$script:Failures = New-Object System.Collections.Generic.List[string]
+$script:ChecksRun = 0
+$script:ChecksPassed = 0
+
+function Add-CheckResult {
+    param(
+        [string]$Name,
+        [bool]$Passed,
+        [string]$Detail
+    )
+    $script:ChecksRun++
+    if ($Passed) {
+        $script:ChecksPassed++
+        Write-Host "[PASS] $Name - $Detail" -ForegroundColor Green
+    } else {
+        $script:Failures.Add("$Name : $Detail")
+        Write-Host "[FAIL] $Name - $Detail" -ForegroundColor Red
+    }
+}
+
+function Get-FrontmatterBlock {
+    param([string[]]$Lines)
+    if ($null -eq $Lines -or $Lines.Count -lt 3) { return $null }
+    if ($Lines[0].Trim() -ne '---') { return $null }
+    $endIdx = -1
+    for ($i = 1; $i -lt $Lines.Count; $i++) {
+        if ($Lines[$i].Trim() -eq '---') {
+            $endIdx = $i
+            break
+        }
+    }
+    if ($endIdx -lt 1) { return $null }
+    $map = @{}
+    for ($j = 1; $j -lt $endIdx; $j++) {
+        $line = $Lines[$j]
+        if ($line -match '^\s*([A-Za-z0-9_-]+)\s*:\s*(.*)$') {
+            $key = $Matches[1].Trim()
+            $val = $Matches[2].Trim().Trim('"').Trim("'")
+            $map[$key] = $val
+        }
+    }
+    return $map
+}
+
+function Read-Utf8Lines {
+    param([string]$Path)
+    $raw = [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8)
+    $normalized = $raw -replace "`r`n", "`n" -replace "`r", "`n"
+    if ($normalized.EndsWith("`n")) {
+        $normalized = $normalized.Substring(0, $normalized.Length - 1)
+    }
+    if ($normalized.Length -eq 0) { return @() }
+    return ,($normalized -split "`n")
+}
+
+Write-Host "Running repository verification lever on: $RepoRoot" -ForegroundColor Cyan
+
+# 1. Rules YAML Frontmatter Check
+$rulesDir = Join-Path $RepoRoot 'rules'
+$ruleFiles = @(Get-ChildItem -Path $rulesDir -Filter '*.md' -File -ErrorAction SilentlyContinue)
+if ($ruleFiles.Count -eq 0) {
+    Add-CheckResult -Name 'Rules Frontmatter' -Passed $false -Detail 'No markdown files found in rules/'
+} else {
+    $ruleErrors = @()
+    foreach ($rf in $ruleFiles) {
+        $lines = Read-Utf8Lines -Path $rf.FullName
+        $fm = Get-FrontmatterBlock -Lines $lines
+        if ($null -eq $fm) {
+            $ruleErrors += "$($rf.Name): missing YAML frontmatter"
+            continue
+        }
+        if (-not $fm.ContainsKey('description') -or [string]::IsNullOrWhiteSpace($fm['description'])) {
+            $ruleErrors += "$($rf.Name): missing 'description'"
+        }
+        if (-not $fm.ContainsKey('trigger') -or [string]::IsNullOrWhiteSpace($fm['trigger'])) {
+            $ruleErrors += "$($rf.Name): missing 'trigger'"
+        }
+    }
+    Add-CheckResult -Name 'Rules Frontmatter' -Passed ($ruleErrors.Count -eq 0) -Detail $(if ($ruleErrors.Count -eq 0) { "$($ruleFiles.Count) rule file(s) valid" } else { $ruleErrors -join '; ' })
+}
+
+# 2. Skills Directory & Frontmatter Schema Check
+$skillsDir = Join-Path $RepoRoot 'skills'
+$skillDirs = @(Get-ChildItem -Path $skillsDir -Directory -ErrorAction SilentlyContinue | Sort-Object Name)
+$skillErrors = @()
+if ($skillDirs.Count -eq 0) {
+    $skillErrors += 'No skill directories found in skills/'
+} else {
+    foreach ($sd in $skillDirs) {
+        $skillMd = Join-Path $sd.FullName 'SKILL.md'
+        if (-not (Test-Path $skillMd)) {
+            $skillErrors += "$($sd.Name): missing SKILL.md"
+            continue
+        }
+        $lines = Read-Utf8Lines -Path $skillMd
+        $fm = Get-FrontmatterBlock -Lines $lines
+        if ($null -eq $fm) {
+            $skillErrors += "$($sd.Name)/SKILL.md: missing YAML frontmatter"
+            continue
+        }
+        if (-not $fm.ContainsKey('name') -or $fm['name'] -ne $sd.Name) {
+            $actual = if ($fm.ContainsKey('name')) { $fm['name'] } else { '<missing>' }
+            $skillErrors += "$($sd.Name)/SKILL.md: frontmatter name '$actual' != folder '$($sd.Name)'"
+        }
+        if (-not $fm.ContainsKey('description') -or [string]::IsNullOrWhiteSpace($fm['description'])) {
+            $skillErrors += "$($sd.Name)/SKILL.md: missing 'description'"
+        }
+    }
+}
+Add-CheckResult -Name 'Skills Schema' -Passed ($skillErrors.Count -eq 0) -Detail $(if ($skillErrors.Count -eq 0) { "$($skillDirs.Count) skill(s) match folder names & schema" } else { $skillErrors -join '; ' })
+
+# 3. Relative Resource & Cross-Skill Link Integrity Check
+$geminiPath = Join-Path $RepoRoot 'GEMINI.md'
+$readmePath = Join-Path $RepoRoot 'README.md'
+$linkErrors = @()
+$checkedLinks = 0
+$pattern = '`((?:\.\./|resources/|scripts/|rules/|templates/|skills/)[^`\s]+)`'
+$filesToScan = @()
+foreach ($sd in $skillDirs) {
+    $skillMd = Join-Path $sd.FullName 'SKILL.md'
+    if (Test-Path $skillMd) { $filesToScan += Get-Item $skillMd }
+}
+foreach ($rootDoc in @('GEMINI.md', 'README.md')) {
+    $p = Join-Path $RepoRoot $rootDoc
+    if (Test-Path $p) { $filesToScan += Get-Item $p }
+}
+
+foreach ($f in $filesToScan) {
+    $lines = Read-Utf8Lines -Path $f.FullName
+    $isGeminiRoot = ($f.FullName -eq $geminiPath)
+    foreach ($line in $lines) {
+        $rowSkillDir = $null
+        if ($isGeminiRoot -and $line -match '`(skills/[A-Za-z0-9_-]+)/?`') {
+            $rowSkillDir = Join-Path $RepoRoot ($Matches[1] -replace '/', [System.IO.Path]::DirectorySeparatorChar)
+        }
+        $rxMatches = [regex]::Matches($line, $pattern)
+        foreach ($m in $rxMatches) {
+            $rel = $m.Groups[1].Value.TrimEnd('/', '.', ',', ';', ':')
+            # Skip template placeholders or wildcard globs
+            if ($rel -match '[\*<>]' -or $rel -match 'XXXX' -or $rel -match '\.\.\.' -or $rel -eq 'skills' -or $rel -eq 'rules' -or $rel -eq 'templates' -or $rel -eq 'scripts' -or $rel -eq 'resources') {
+                continue
+            }
+            if ($rel.StartsWith('../')) {
+                $baseDir = $f.DirectoryName
+            } elseif ($rel.StartsWith('resources/')) {
+                if ($isGeminiRoot -and $null -ne $rowSkillDir) {
+                    $baseDir = $rowSkillDir
+                } else {
+                    $baseDir = $f.DirectoryName
+                }
+            } else {
+                $baseDir = $RepoRoot
+            }
+            $resolved = Join-Path $baseDir ($rel -replace '/', [System.IO.Path]::DirectorySeparatorChar)
+            $checkedLinks++
+            if (-not (Test-Path $resolved)) {
+                $linkErrors += "$($f.FullName.Substring($RepoRoot.Length + 1)): broken ref '$rel'"
+            }
+        }
+    }
+}
+Add-CheckResult -Name 'Link Integrity' -Passed ($linkErrors.Count -eq 0) -Detail $(if ($linkErrors.Count -eq 0) { "$checkedLinks relative reference(s) verified" } else { $linkErrors -join '; ' })
+
+# 4. Markdown Code Fence Pairing Check
+$mdFiles = @(Get-ChildItem -Path $RepoRoot -Filter '*.md' -Recurse -File | Where-Object { $_.FullName -notmatch '\\\.git\\' })
+$fenceErrors = @()
+foreach ($mf in $mdFiles) {
+    $lines = Read-Utf8Lines -Path $mf.FullName
+    $fenceCount = 0
+    foreach ($ln in $lines) {
+        if ($ln -match '^\s*```') {
+            $fenceCount++
+        }
+    }
+    if (($fenceCount % 2) -ne 0) {
+        $relPath = $mf.FullName.Substring($RepoRoot.Length + 1)
+        $fenceErrors += "$relPath (unbalanced code fences: $fenceCount)"
+    }
+}
+Add-CheckResult -Name 'Markdown Fences' -Passed ($fenceErrors.Count -eq 0) -Detail $(if ($fenceErrors.Count -eq 0) { "$($mdFiles.Count) markdown file(s) have balanced fences" } else { $fenceErrors -join '; ' })
+
+# 5. SSOT Index Synchronization (GEMINI.md & README.md vs skills/ & scripts/)
+$indexErrors = @()
+$geminiText = if (Test-Path $geminiPath) { [System.IO.File]::ReadAllText($geminiPath, [System.Text.Encoding]::UTF8) } else { '' }
+$readmeText = if (Test-Path $readmePath) { [System.IO.File]::ReadAllText($readmePath, [System.Text.Encoding]::UTF8) } else { '' }
+
+foreach ($sd in $skillDirs) {
+    if ($geminiText -notmatch [regex]::Escape($sd.Name)) {
+        $indexErrors += "GEMINI.md missing skill '$($sd.Name)'"
+    }
+    if ($readmeText -notmatch [regex]::Escape($sd.Name)) {
+        $indexErrors += "README.md missing skill '$($sd.Name)'"
+    }
+}
+$verifyScript = Join-Path $RepoRoot 'scripts\verify-repo.ps1'
+if (Test-Path $verifyScript) {
+    if ($geminiText -notmatch 'verify-repo\.ps1') {
+        $indexErrors += 'GEMINI.md missing scripts/verify-repo.ps1'
+    }
+    if ($readmeText -notmatch 'verify-repo\.ps1') {
+        $indexErrors += 'README.md missing scripts/verify-repo.ps1'
+    }
+}
+Add-CheckResult -Name 'SSOT Index Sync' -Passed ($indexErrors.Count -eq 0) -Detail $(if ($indexErrors.Count -eq 0) { "GEMINI.md and README.md cover all $($skillDirs.Count) skills and verify-repo.ps1" } else { $indexErrors -join '; ' })
+
+# 6. Change_Log.md Append-Only Invariant Check
+$changeLogPath = Join-Path $RepoRoot 'Change_Log.md'
+if ($SkipGitAppendCheck) {
+    Write-Host '[INFO] Change_Log Append-Only - Skipped via -SkipGitAppendCheck' -ForegroundColor Yellow
+} elseif (-not (Test-Path $changeLogPath)) {
+    Add-CheckResult -Name 'Change_Log Append-Only' -Passed $false -Detail 'Change_Log.md not found'
+} else {
+    $gitExists = Get-Command git -ErrorAction SilentlyContinue
+    if ($null -eq $gitExists -or -not (Test-Path (Join-Path $RepoRoot '.git'))) {
+        Add-CheckResult -Name 'Change_Log Append-Only' -Passed $false -Detail 'Git repository not detected for append-only verification'
+    } else {
+        $headRaw = (& git -C $RepoRoot show 'HEAD:Change_Log.md' 2>$null) -join "`n"
+        if ($LASTEXITCODE -ne 0) {
+            Add-CheckResult -Name 'Change_Log Append-Only' -Passed $false -Detail 'Unable to read HEAD:Change_Log.md'
+        } else {
+            $headNorm = ($headRaw -replace "`r`n", "`n" -replace "`r", "`n").TrimEnd("`n")
+            $headLines = if ($headNorm.Length -eq 0) { @() } else { ,($headNorm -split "`n") }
+            $currLines = Read-Utf8Lines -Path $changeLogPath
+            $appendOk = $true
+            $mismatchMsg = ''
+            if ($currLines.Count -lt $headLines.Count) {
+                $appendOk = $false
+                $mismatchMsg = "Current line count ($($currLines.Count)) < HEAD line count ($($headLines.Count))"
+            } else {
+                for ($k = 0; $k -lt $headLines.Count; $k++) {
+                    if ($currLines[$k] -ne $headLines[$k]) {
+                        $appendOk = $false
+                        $mismatchMsg = "Historical line $($k + 1) modified (violates APPEND ONLY)"
+                        break
+                    }
+                }
+            }
+            Add-CheckResult -Name 'Change_Log Append-Only' -Passed $appendOk -Detail $(if ($appendOk) { "All $($headLines.Count) historical line(s) preserved; total lines: $($currLines.Count)" } else { $mismatchMsg })
+        }
+    }
+}
+
+Write-Host ''
+Write-Host "Summary: $($script:ChecksPassed)/$($script:ChecksRun) checks passed." -ForegroundColor $(if ($script:Failures.Count -eq 0) { 'Green' } else { 'Red' })
+if ($script:Failures.Count -gt 0) {
+    exit 1
+}
+exit 0
