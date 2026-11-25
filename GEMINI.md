@@ -22,6 +22,7 @@
 | `skills/rtl-hardware-review/` | Verilog/VHDL、FPGA、CDC 跨時脈、握手時序審核 | `SKILL.md`, `resources/rtl-checklist.md` | `/rtl-hardware-review` 或硬體/RTL/CDC 關鍵字 |
 | `skills/protocol-stack-contract-review/` | 通訊協定、USB/FIFO、Register Map、ACK 語義審核 | `SKILL.md`, `resources/protocol-checklist.md` | `/protocol-stack-contract-review` 或封包/長度/暫存器關鍵字 |
 | `skills/change-safety-and-verification/` | 變更安全、Git 優先回滾備份、真實驗證制度 | `SKILL.md`, `resources/verification-template.md` | 改動程式碼（`IMPLEMENT`）或驗證時強制調用 |
+| `skills/observed-baseline-and-ssot-sync/` | 實測 100% 仿照優先、可疑先提報與 SSOT 回溯同步 | `SKILL.md`, `resources/baseline-ssot-checklist.md`, `resources/suspicious-behavior-report-template.md` | 涉及 LA/示波器/抓包實測或修正既有規格/Bug 時強制調用 |
 | `templates/` | 三大情境專案導入通用提示詞手冊 | `templates/project-onboarding-prompts.md` | 複製填入 `XXXX` 貼至 IDE 對話框 |
 | `README.md` | 跨電腦掛載、同步更新與手冊導覽說明 | `README.md` | 查閱一鍵掛載指令 |
 
@@ -37,3 +38,4 @@
 4. **黃金路徑保護**：嚴禁擅自破壞既有功能、公共 API、協定契約或既定黃金路徑。
 5. **Change_Log 嚴格 APPEND ONLY**：只能在末尾追加紀錄，嚴禁重排、改寫或刪除歷史。
 6. **誠實證據分級**：嚴格區分 `CONFIRMED`（有直接證據）、`INFERRED`（推論及根據）、`UNKNOWN / NOT PROVEN`（未證實）；測試結果非真實執行不得宣稱 `PASS`。
+7. **實測原樣仿照優先與 SSOT 回溯同步**：LA／抓包等實測行為必須先 100% 仿照再於外層變通，禁止擅自增刪控制步驟，有疑慮須停在 `PLAN_ONLY` 提報可疑點；中途修正確認後強制回溯掃描並同步或封存早期過時文件與同名複本。

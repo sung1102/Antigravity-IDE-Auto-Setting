@@ -18,3 +18,6 @@ trigger: always_on
    - `Change_Log.md` / `CHANGELOG.md` 一律採 **APPEND ONLY**（僅能附加於末尾，嚴禁刪除、重排或改寫歷史）。
    - 若專案有 `VerificationCoverageMatrix.md`，必須同步更新真實狀態，嚴禁填寫虛構測試結果。
 5. **證據分級與誠實回報**：嚴格區分 `CONFIRMED`（有直接證據）、`INFERRED`（推論與根據）、`UNKNOWN / NOT PROVEN`（現有證據無法證明）。未實際執行的測試標為 `NOT RUN`，環境受限標為 `BLOCKED`，無真實執行/模擬/合成/板端證據時，絕對不可宣稱 PASS。
+6. **實測基準 100% 仿照優先與 SSOT 回溯同步**：
+   - 面對邏輯分析儀（LA）、示波器、抓包或實機實測行為，第一階段必須 **100% 原樣仿照**，驗證重現後方可於外層推理變通應用；嚴禁未經實測擅自增刪控制步驟，有疑慮僅能停留在 `PLAN_ONLY` 提出可疑點報告（詳見 `observed-baseline-and-ssot-sync`）。
+   - 嚴格維護 **Tier 1（實測與線上已驗證碼）> Tier 2（同步規格）> Tier 3（歷史封存）** 單一事實基準；任何中途修正確認後，結案前強制回溯掃描並同步／封存過時文件、組態與複本，禁止後續 AI 繞回引用舊資料。

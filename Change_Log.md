@@ -54,3 +54,15 @@ This file is strictly **APPEND ONLY**. Never reorder, delete, or rewrite histori
   - Added `Change_Log.md` complying strictly with APPEND-ONLY rules.
   - Added `VerificationCoverageMatrix.md` tracking repository validation and linting items.
   - Verified 1-to-1 repository name mapping: `Antigravity-IDE-Auto-Setting`.
+
+
+---
+
+## [2026-11-25] Add Observed Baseline Replication & SSOT Retroactive Sync Skill
+- **Type**: Feature / Governance Enhancement
+- **Base Commit**: `48ea74d`
+- **Details**:
+  - Added new global skill `skills/observed-baseline-and-ssot-sync/SKILL.md` with `resources/baseline-ssot-checklist.md` and `resources/suspicious-behavior-report-template.md`.
+  - Enforced Replicate-First discipline for LA/oscilloscope/packet captures: replicate observed behavior 100% before outer-layer adaptation; prohibit unauthorized addition/removal of control steps; mandate `PLAN_ONLY` suspicious-behavior reporting before altering observed sequences.
+  - Enforced Truth Priority Hierarchy (Tier 1 > Tier 2 > Tier 3) and mandatory Retroactive Sweep on confirmation to update or deprecate stale docs, configs, and duplicate snapshots.
+  - Integrated references into `rules/engineering-governance.md`, `engineering-review-orchestrator`, `protocol-stack-contract-review`, `change-safety-and-verification`, `templates/project-onboarding-prompts.md`, `GEMINI.md`, and `README.md`.

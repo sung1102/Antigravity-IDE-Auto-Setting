@@ -41,6 +41,8 @@ description: 變更安全保護、Git 優先版本回滾（嚴禁重複實體拷
    - 新增變更紀錄**只能附加在檔案最末尾**，**嚴禁**重排、改寫、刪除或壓縮任何既有歷史內容。
 2. **`VerificationCoverageMatrix.md` 維護**：
    - 若已存在驗證覆蓋矩陣，必須隨修改同步更新對應列、測試證據與缺口；**絕對禁止用虛構測試結果填滿矩陣**。
+3. **SSOT 回溯同步與過時資料清理（Retroactive Stale-Data Sync）**：
+   - 每當中途實測確認了規格、參數、超時常數或控制流程修正，結案前必須依 `observed-baseline-and-ssot-sync` 執行全專案掃描，同步更新過時文件／組態／同名複本檔，或於歷史檔案明確標註 `[DEPRECATED / HISTORICAL]` 並指向 Tier 1 唯一真理來源。
 
 ## 四、 真實驗證狀態與誠實回報
 每次變更或驗證後，必須依 `resources/verification-template.md` 回報，並嚴格使用以下四種狀態標記：

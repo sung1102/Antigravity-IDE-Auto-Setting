@@ -23,7 +23,8 @@
 2. 建立專案骨幹、README.md、Change_Log.md（初始化第一筆記錄）與 VerificationCoverageMatrix.md。
 3. 建立專案記憶索引檔 GEMINI.md：
    - 記錄專案目標、核心架構邊界與紅線保護規則。
-   - 標明後續 AI 每次進入專案時優先讀取之文件索引。
+   - 確立三級事實基準優先序（Tier 1 實測與線上原始碼 > Tier 2 同步規格 > Tier 3 歷史封存），並標明後續 AI 優先讀取之文件索引。
+   - 視專案需要於 `.agents/skills/` 建立專案專屬實測/協定技能書。
 4. 建立初始專案骨幹與 Hello World / Loopback 驗證結構，完成 Stage 1 驗證。
 5. 綁定同名 GitHub 遠端私人倉庫並執行首次推送：
    git add .
@@ -60,7 +61,7 @@
    - docs/02_Software_Architecture.md：UI/業務呼叫鏈、核心模組、通訊包裝層。
    - docs/03_Protocol_and_Register_Map.md：封包格式、Length 定義、暫存器對照表。
 4. 在專案根目錄建立/維護治理文件：
-   - 建立 GEMINI.md 專案記憶索引：摘要系統架構、通訊參數與紅線指示（強制先讀 docs/ 不全盤盲掃）。
+   - 建立 GEMINI.md 專案記憶索引：摘要系統架構、通訊參數、三級事實基準優先序（Tier 1>2>3）與紅線指示（強制先讀 docs/ 不全盤盲掃，實測控制必須先 100% 仿照再變通）。
    - 建立或追加 Change_Log.md（Append-Only 原則）：
      * 若舊專案無此檔：新建並寫入第一筆「[YYYY-MM-DD] 專案轉移納管至 GitHub，完成 FPGA/軟體/通訊架構基準文件分析」。
      * 若舊專案已有此檔：保留全部歷史紀錄，僅在最末尾追加本次納管紀錄。
@@ -93,7 +94,8 @@
 1. 執行 git status 與 git diff，確認無未提交的衝突內容。
 2. 建立升級安全備份標籤：git tag backup/pre-governance-upgrade-$(date +%Y%m%d%H%M%S)。
 3. 檢視並升級專案治理文件：
-   - 檢查/新建 GEMINI.md：整合全域工程審核規則（強制 MODE 標記、TRACE_ONLY 優先、真實證據分級），並建立專案關鍵模組導覽地圖。
+   - 檢查/新建 GEMINI.md：整合全域工程審核規則（強制 MODE 標記、TRACE_ONLY 優先、真實證據分級、實測 100% 仿照優先與 Tier 1>2>3 事實基準優先序），並建立專案關鍵模組導覽地圖。
+   - 若專案已有歷史實測經驗或反直覺硬體時序，於 `.agents/skills/` 建立專案專屬技能並執行一次過時文件/複本同步掃描（清理或標註 `[DEPRECATED]`）。
    - 檢查/建立 Change_Log.md：確保符合「APPEND ONLY（僅限末尾追加）」原則，記錄本次規範升級。
    - 檢查/建立 VerificationCoverageMatrix.md：依現有測試與驗證項目建立矩陣骨幹（未實跑者標記 NOT RUN）。
 4. 檢查遠端倉庫與分支命名是否符合「專案名稱 1 對 1 同名映射」規範。

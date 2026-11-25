@@ -14,6 +14,7 @@ description: 主控工程審核技能。當使用者以自然語言描述錯誤�
    - **RTL / FPGA / ASIC (Verilog/SystemVerilog/VHDL/SDC/Testbench)** → 調用 `rtl-hardware-review`
    - **韌體 / 驅動 / 通訊協定 (TL/AL/HAL, USB/PCIe/UART/I2C/SPI/Ethernet, Register Map)** → 調用 `protocol-stack-contract-review`
    - **軟硬體共同系統 / 混合型專案** → 同時調用上述相關技能進行跨層交集審查。
+   - **涉及 LA / 示波器 / 抓包實測逆向分析、或規格／參數／Bug 修正** → 強制調用 `observed-baseline-and-ssot-sync`（確保先 100% 原樣仿照、有可疑先提報不擅自增刪，且修正確認後回溯同步早期文件與複本）。
    - **涉及任何專案初始化、檔案修改、備份、歷史紀錄或測試驗證** → 強制調用 `change-safety-and-verification`。
 
 ## 二、 工作模式（MODE）自動判定規則
@@ -56,6 +57,7 @@ description: 主控工程審核技能。當使用者以自然語言描述錯誤�
 - **Phase 5 — VERIFY_ONLY / 驗收**：
   - 先跑最相關、低成本的驗證，再跑完整 build/test/sim/lint/synth/timing。
   - 驗證原始症狀、邊界條件、錯誤路徑與回歸。
+  - 若本次修正改變了任何規格、參數、時序或修復既定認知，依 `observed-baseline-and-ssot-sync` 執行 **SSOT 回溯掃描**：同步更新或封存舊規格、JSON 設定與同名複本檔，避免後續 AI 誤用舊資料。
   - 更新 Append-only 變更紀錄與驗證覆蓋矩陣，回報 `PASS / FAIL / BLOCKED / NOT RUN`。
 
 ## 四、 每次回覆的固定格式（7 大必備區塊）

@@ -37,6 +37,11 @@
         ├── SKILL.md
         └── resources/
             └── verification-template.md
+    └── observed-baseline-and-ssot-sync/                   # F. 實測原樣仿照與 SSOT 回溯同步技能
+        ├── SKILL.md
+        └── resources/
+            ├── baseline-ssot-checklist.md
+            └── suspicious-behavior-report-template.md
 ```
 
 ---

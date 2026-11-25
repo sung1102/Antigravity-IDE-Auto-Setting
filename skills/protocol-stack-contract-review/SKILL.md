@@ -33,5 +33,9 @@ description: 通訊協定與跨層契約審核技能。適用於 TL/AL/HAL 分�
 - 對照規格文件（Spec / Datasheet）與程式/RTL 實作，明確列出任何矛盾之處。
 - **嚴禁猜測硬體副作用**：對於 Reset、Stop/Start、FIFO Cleanup、模式切換或 Page 切換的硬體副作用與等待時間，若無 RTL、規格書或實測波形證據，一律標示為 `UNKNOWN / NOT PROVEN`。
 
+### 6. 實測波形原樣仿照與不可擅自增刪原則 (Observed Baseline Integrity)
+- 當協定參數、封包或時序係由邏輯分析儀（LA）、示波器或抓包實測取得時，第一階段**強制 100% 原樣仿照**（連發次數、發射週期、避碰靜默窗、前置喚醒條件與雙階釋放順序），驗收成功後才可於外層推理變通應用。
+- **嚴禁未經實測授權擅自加入或刪減任何控制步驟**；若懷疑實測時序存在冗餘或異常，強制退回 `PLAN_ONLY` 並調用 `observed-baseline-and-ssot-sync` 提報可疑點與單變因對照計畫，不得先斬後奏。
+
 ## 二、 檢查清單參考
-詳細逐項檢查請對照 `resources/protocol-checklist.md`。
+詳細逐項檢查請對照 `resources/protocol-checklist.md`（若涉及實測仿照或修正回溯，並對照 `../observed-baseline-and-ssot-sync/resources/baseline-ssot-checklist.md`）。
