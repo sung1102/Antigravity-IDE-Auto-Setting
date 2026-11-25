@@ -109,35 +109,52 @@ if ($ruleFiles.Count -eq 0) {
     Add-CheckResult -Name 'Rules Frontmatter' -Passed ($ruleErrors.Count -eq 0) -Detail $(if ($ruleErrors.Count -eq 0) { "$($ruleFiles.Count) rule file(s) valid" } else { $ruleErrors -join '; ' })
 }
 
-# 2. Skills Directory & Frontmatter Schema Check
+# 2. Skills Directory & Frontmatter Schema Check (Global skills/ + Project .agents/skills/)
 $skillsDir = Join-Path $RepoRoot 'skills'
 $skillDirs = @(Get-ChildItem -Path $skillsDir -Directory -ErrorAction SilentlyContinue | Sort-Object Name)
+$localSkillsDir = Join-Path $RepoRoot '.agents\skills'
+$localSkillDirs = @(Get-ChildItem -Path $localSkillsDir -Directory -ErrorAction SilentlyContinue | Sort-Object Name)
 $skillErrors = @()
-if ($skillDirs.Count -eq 0) {
-    $skillErrors += 'No skill directories found in skills/'
-} else {
-    foreach ($sd in $skillDirs) {
+
+function Test-SkillDirectorySet {
+    param(
+        [System.IO.DirectoryInfo[]]$Dirs,
+        [string]$Prefix
+    )
+    $errs = @()
+    foreach ($sd in $Dirs) {
         $skillMd = Join-Path $sd.FullName 'SKILL.md'
         if (-not (Test-Path $skillMd)) {
-            $skillErrors += "$($sd.Name): missing SKILL.md"
+            $errs += "$Prefix$($sd.Name): missing SKILL.md"
             continue
         }
         $lines = Read-Utf8Lines -Path $skillMd
         $fm = Get-FrontmatterBlock -Lines $lines
         if ($null -eq $fm) {
-            $skillErrors += "$($sd.Name)/SKILL.md: missing YAML frontmatter"
+            $errs += "$Prefix$($sd.Name)/SKILL.md: missing YAML frontmatter"
             continue
         }
         if (-not $fm.ContainsKey('name') -or $fm['name'] -ne $sd.Name) {
             $actual = if ($fm.ContainsKey('name')) { $fm['name'] } else { '<missing>' }
-            $skillErrors += "$($sd.Name)/SKILL.md: frontmatter name '$actual' != folder '$($sd.Name)'"
+            $errs += "$Prefix$($sd.Name)/SKILL.md: frontmatter name '$actual' != folder '$($sd.Name)'"
         }
         if (-not $fm.ContainsKey('description') -or [string]::IsNullOrWhiteSpace($fm['description'])) {
-            $skillErrors += "$($sd.Name)/SKILL.md: missing 'description'"
+            $errs += "$Prefix$($sd.Name)/SKILL.md: missing 'description'"
         }
     }
+    return ,$errs
 }
-Add-CheckResult -Name 'Skills Schema' -Passed ($skillErrors.Count -eq 0) -Detail $(if ($skillErrors.Count -eq 0) { "$($skillDirs.Count) skill(s) match folder names & schema" } else { $skillErrors -join '; ' })
+
+if ($skillDirs.Count -eq 0) {
+    $skillErrors += 'No skill directories found in skills/'
+} else {
+    $skillErrors += Test-SkillDirectorySet -Dirs $skillDirs -Prefix 'skills/'
+}
+if ($localSkillDirs.Count -gt 0) {
+    $skillErrors += Test-SkillDirectorySet -Dirs $localSkillDirs -Prefix '.agents/skills/'
+}
+$totalSkillCount = $skillDirs.Count + $localSkillDirs.Count
+Add-CheckResult -Name 'Skills Schema' -Passed ($skillErrors.Count -eq 0) -Detail $(if ($skillErrors.Count -eq 0) { "$($skillDirs.Count) global + $($localSkillDirs.Count) local skill(s) match folder names & schema ($totalSkillCount total)" } else { $skillErrors -join '; ' })
 
 # 3. Relative Resource & Cross-Skill Link Integrity Check
 $geminiPath = Join-Path $RepoRoot 'GEMINI.md'
@@ -146,7 +163,7 @@ $linkErrors = @()
 $checkedLinks = 0
 $pattern = '`((?:\.\./|resources/|scripts/|rules/|templates/|skills/)[^`\s]+)`'
 $filesToScan = @()
-foreach ($sd in $skillDirs) {
+foreach ($sd in ($skillDirs + $localSkillDirs)) {
     $skillMd = Join-Path $sd.FullName 'SKILL.md'
     if (Test-Path $skillMd) { $filesToScan += Get-Item $skillMd }
 }
@@ -231,7 +248,15 @@ if (Test-Path $verifyScript) {
         $indexErrors += 'README.md missing scripts/verify-repo.ps1'
     }
 }
-Add-CheckResult -Name 'SSOT Index Sync' -Passed ($indexErrors.Count -eq 0) -Detail $(if ($indexErrors.Count -eq 0) { "GEMINI.md and README.md cover all $($skillDirs.Count) skills and verify-repo.ps1" } else { $indexErrors -join '; ' })
+foreach ($assetPattern in @('Feature_Map\.md', 'verify-Antigravity-IDE-Auto-Setting', 'pre-commit')) {
+    if ($geminiText -notmatch $assetPattern) {
+        $indexErrors += "GEMINI.md missing reference matching '$assetPattern'"
+    }
+    if ($readmeText -notmatch $assetPattern) {
+        $indexErrors += "README.md missing reference matching '$assetPattern'"
+    }
+}
+Add-CheckResult -Name 'SSOT Index Sync' -Passed ($indexErrors.Count -eq 0) -Detail $(if ($indexErrors.Count -eq 0) { "GEMINI.md and README.md cover all $($skillDirs.Count) global skills, local verify skill, Feature_Map, pre-commit, and verify-repo.ps1" } else { $indexErrors -join '; ' })
 
 # 6. Change_Log.md Append-Only Invariant Check
 $changeLogPath = Join-Path $RepoRoot 'Change_Log.md'
@@ -269,6 +294,20 @@ if ($SkipGitAppendCheck) {
         }
     }
 }
+
+# 7. Self-Dogfooding & Readme Drift Gate
+$dogfoodErrors = @()
+$featureMapPath = Join-Path $RepoRoot 'docs\Feature_Map.md'
+$selfVerifySkill = Join-Path $RepoRoot '.agents\skills\verify-Antigravity-IDE-Auto-Setting\SKILL.md'
+$preCommitHook = Join-Path $RepoRoot '.githooks\pre-commit'
+
+if (-not (Test-Path $featureMapPath)) { $dogfoodErrors += 'Missing docs/Feature_Map.md' }
+if (-not (Test-Path $selfVerifySkill)) { $dogfoodErrors += 'Missing .agents/skills/verify-Antigravity-IDE-Auto-Setting/SKILL.md' }
+if (-not (Test-Path $preCommitHook)) { $dogfoodErrors += 'Missing .githooks/pre-commit' }
+if ($readmeText -match '01~03') {
+    $dogfoodErrors += "README.md contains stale '01~03' reference (expected 01~04 + Feature_Map)"
+}
+Add-CheckResult -Name 'Dogfooding & Drift Gate' -Passed ($dogfoodErrors.Count -eq 0) -Detail $(if ($dogfoodErrors.Count -eq 0) { 'Self-dogfooding assets present and README.md free of stale 01~03 drift' } else { $dogfoodErrors -join '; ' })
 
 Write-Host ''
 Write-Host "Summary: $($script:ChecksPassed)/$($script:ChecksRun) checks passed." -ForegroundColor $(if ($script:Failures.Count -eq 0) { 'Green' } else { 'Red' })

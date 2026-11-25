@@ -11,8 +11,16 @@
 ```text
 ~/.gemini/config/
 ├── README.md                                              # 跨電腦掛載、同步與手冊導覽
+├── .githooks/
+│   └── pre-commit                                         # Git 提交自動門檻（呼叫 scripts/verify-repo.ps1）
+├── .agents/
+│   └── skills/
+│       └── verify-Antigravity-IDE-Auto-Setting/
+│           └── SKILL.md                                   # 本倉庫專屬自我驗證技能 (Dogfooding Lever)
+├── docs/
+│   └── Feature_Map.md                                     # 本倉庫行為級功能與驗證地圖
 ├── scripts/
-│   └── verify-repo.ps1                                    # 本倉庫一鍵靜態驗證槓桿（Schema / 路徑 / 圍欄 / 索引 / Append-Only）
+│   └── verify-repo.ps1                                    # 本倉庫一鍵靜態驗證槓桿（Schema / 路徑 / 圍欄 / 索引 / Drift / Append-Only）
 ├── templates/
 │   └── project-onboarding-prompts.md                      # 三大情境專案導入通用提示詞手冊 (含 XXXX 填空範本)
 ├── rules/
@@ -60,9 +68,9 @@
 
 | 情境編號 | 適用場景 | 核心動作 |
 |---|---|---|
-| **情境 1** | 全新專案開發 | 建立專案骨幹、初始化 Git、綁定 GitHub 私人庫、產生 `GEMINI.md` |
-| **情境 2** | 舊專案納管至 GitHub | Git 基準建置、唯讀逆向分析、產出 `docs/` 01~03 架構/通訊文件並推送 |
-| **情境 3** | 現有專案升級 AI 規範 | 保留原始功能，升級 `GEMINI.md`、`Change_Log.md` 與驗證覆蓋矩陣 |
+| **情境 1** | 全新專案開發 | 建立專案骨幹與編譯/Lint 門檻、初始化 Git、綁定 GitHub 私人庫、產生 `GEMINI.md`、`docs/Feature_Map.md` 與 `.agents/skills/verify-*` |
+| **情境 2** | 舊專案納管至 GitHub | Git 基準建置、唯讀逆向分析、產出 `docs/` `01~04` 架構/通訊/Feature Map 文件、`.agents/skills/verify-*` 並推送 |
+| **情境 3** | 現有專案升級 AI 規範 | 保留原始功能，升級 `GEMINI.md`、`docs/Feature_Map.md`、`.agents/skills/verify-*`、`Change_Log.md`、驗證覆蓋矩陣與錯誤硬化檢查 |
 
 所有範本內的 `XXXX` 均為填空佔位符，替換為實際名稱後直接貼入 Antigravity IDE 對話框即可執行。
 
@@ -87,6 +95,7 @@
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
 if (Test-Path "$HOME\.gemini\config") { Move-Item "$HOME\.gemini\config" "$HOME\.gemini\backup_$timestamp" }
 git clone https://github.com/sung1102/Antigravity-IDE-Auto-Setting.git "$HOME\.gemini\config"
+git -C "$HOME\.gemini\config" config core.hooksPath .githooks
 ```
 
 ### macOS / Linux (Bash)
@@ -94,6 +103,7 @@ git clone https://github.com/sung1102/Antigravity-IDE-Auto-Setting.git "$HOME\.g
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 [ -d "$HOME/.gemini/config" ] && mv "$HOME/.gemini/config" "$HOME/.gemini/backup_$TIMESTAMP"
 git clone https://github.com/sung1102/Antigravity-IDE-Auto-Setting.git "$HOME/.gemini/config"
+git -C "$HOME/.gemini/config" config core.hooksPath .githooks
 ```
 
 ---
@@ -102,9 +112,9 @@ git clone https://github.com/sung1102/Antigravity-IDE-Auto-Setting.git "$HOME/.g
 
 - **在新電腦拉取最新設定與手冊**：
   ```bash
-  cd ~/.gemini/config && git pull origin main
+  cd ~/.gemini/config && git pull origin main && git config core.hooksPath .githooks
   ```
-- **修改規則或技能後先跑一鍵自檢**（Windows PowerShell）：
+- **修改規則或技能後先跑一鍵自檢**（Windows PowerShell；已啟用 `.githooks/pre-commit` 時 `git commit` 亦會自動攔截）：
   ```powershell
   powershell -ExecutionPolicy Bypass -File .\scripts\verify-repo.ps1
   ```

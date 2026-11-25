@@ -25,6 +25,9 @@
 | `skills/observed-baseline-and-ssot-sync/` | 實測 100% 仿照優先、可疑先提報與 SSOT 回溯同步 | `SKILL.md`, `resources/baseline-ssot-checklist.md`, `resources/suspicious-behavior-report-template.md` | 涉及 LA/示波器/抓包實測或修正既有規格/Bug 時強制調用 |
 | `skills/verification-harness-builder/` | 專案驗證槓桿（Verification Lever）、Feature Map 與錯誤硬化 | `SKILL.md`, `resources/feature-map-template.md`, `resources/verify-skill-template.md`, `resources/guardrail-snippets.md` | 建置專案自動驗證入口、Feature Map 或重複錯誤硬化時調用 |
 | `scripts/` | 本倉庫自動化靜態校驗槓桿 | `scripts/verify-repo.ps1` | 修改規則、技能或手冊後執行 `powershell -ExecutionPolicy Bypass -File .\scripts\verify-repo.ps1` |
+| `docs/` | 本倉庫行為級功能與驗證地圖 | `docs/Feature_Map.md` | 查閱本倉庫 `F-01`~`F-06` 驗證對照與漂移狀態 |
+| `.agents/skills/` | 本倉庫專屬自我驗證技能（Dogfooding） | `.agents/skills/verify-Antigravity-IDE-Auto-Setting/SKILL.md` | 本倉庫執行自我驗收與負向測試時調用 |
+| `.githooks/` | Git 提交前自動攔截門檻 | `.githooks/pre-commit` | 透過 `git config core.hooksPath .githooks` 啟用自動驗證 |
 | `templates/` | 三大情境專案導入通用提示詞手冊 | `templates/project-onboarding-prompts.md` | 複製填入 `XXXX` 貼至 IDE 對話框 |
 | `README.md` | 跨電腦掛載、同步更新與手冊導覽說明 | `README.md` | 查閱一鍵掛載指令 |
 

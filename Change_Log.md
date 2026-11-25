@@ -90,3 +90,16 @@ This file is strictly **APPEND ONLY**. Never reorder, delete, or rewrite histori
   - Upgraded `skills/engineering-review-orchestrator/SKILL.md` and `resources/change-plan-template.md` with Phase 1/3 Sharpen & In-Your-Own-Words alignment, Phase 2 parallel read-only `research` subagent tracing, and Phase 5 `browser` verification + Blind Verification guidance.
   - Upgraded `skills/change-safety-and-verification/SKILL.md` and `resources/verification-template.md` with Minimal Clean Diff & Unslop discipline, explicit separation of `Regression` vs `New Behavior Proof`, and `Guardrail Escalation` tracking.
   - Added `skills/verification-harness-builder/resources/guardrail-snippets.md` providing deterministic templates for Git `pre-commit`, C#/WPF (`Directory.Build.props`, `.editorconfig`), RTL (`verilator`, `iverilog`/`vvp`), and Python (`ruff`, `pytest`), and indexed it in `SKILL.md`, `GEMINI.md`, and `README.md`.
+
+
+---
+
+## [2026-11-25] Self-Dogfooding Alignment, README Drift Fix & Pre-Commit Gate
+- **Type**: Dogfooding / SSOT Alignment & Guardrail Hardening
+- **Base Commit**: `8f53ec7`
+- **Details**:
+  - Created Git safety backup branch `backup/Antigravity-IDE-Auto-Setting_20261125_184026`.
+  - Applied `verification-harness-builder` to this repository itself by adding `docs/Feature_Map.md`, `.agents/skills/verify-Antigravity-IDE-Auto-Setting/SKILL.md`, and `.githooks/pre-commit`.
+  - Fixed SSOT Doc Drift in `README.md` (updated Scenario 1–3 summary table from stale `01~03` to `01~04` + `Feature_Map.md` + `.agents/skills/verify-*`, updated directory tree, and documented `git config core.hooksPath .githooks`).
+  - Upgraded `scripts/verify-repo.ps1` (7 checks) to validate `.agents/skills/*/SKILL.md` schema, self-dogfooding asset presence, SSOT index coverage, and block stale `01~03` drift in `README.md`.
+  - Updated `GEMINI.md` Key Modules Map and `VerificationCoverageMatrix.md`.
