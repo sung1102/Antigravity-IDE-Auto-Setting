@@ -22,7 +22,9 @@
 │   ├── Architecture_and_Workflow.md                       # 技能應用架構圖、五階段閉環流程與詳細說明
 │   └── Feature_Map.md                                     # 本倉庫行為級功能與驗證地圖
 ├── scripts/
-│   └── verify-repo.ps1                                    # 本倉庫一鍵靜態驗證槓桿（Schema / 路徑 / 圍欄 / 索引 / Drift / Append-Only）
+│   ├── sync-config.ps1                                    # Windows 無損掛載與 V1->V2 升級工具（保留自建技能與 MCP）
+│   ├── sync-config.sh                                     # macOS / Linux 無損掛載與 V1->V2 升級工具
+│   └── verify-repo.ps1                                    # 本倉庫一鍵靜態驗證槓桿（支援 -TrackedOnly）
 ├── templates/
 │   └── project-onboarding-prompts.md                      # 三大情境專案導入通用提示詞手冊 (含 XXXX 填空範本)
 ├── rules/
@@ -107,39 +109,49 @@
 
 ---
 
-## 五、 在新電腦上一鍵掛載
+## 五、 跨電腦首次掛載與 V1 → V2 升級（不刪除自建技能與 MCP）
 
-換到新電腦時，在終端機執行對應指令即可完成部署：
+請記住一個核心順序：**先更新電腦上的 `~/.gemini/config`（共用大腦），再去開各專案套用提示詞**。
+本倉庫內建跨平台無損同步工具（`scripts/sync-config.ps1` / `scripts/sync-config.sh`），會**完整保留**該電腦原有的 `mcp_config.json`、`config.json`、`plugins/`、`projects/` 以及**未與官方撞名的個人自建技能（如 `skills/<your-custom-skill>/`）**，不再整包搬走資料夾。
 
-### Windows (PowerShell)
-```powershell
-$timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-if (Test-Path "$HOME\.gemini\config") { Move-Item "$HOME\.gemini\config" "$HOME\.gemini\backup_$timestamp" }
-git clone https://github.com/sung1102/Antigravity-IDE-Auto-Setting.git "$HOME\.gemini\config"
-git -C "$HOME\.gemini\config" config core.hooksPath .githooks
-```
+### 情況 A：已用 Git 掛載過舊版（V1 → V2 一鍵升級）
+直接在該電腦執行一行同步工具即可升級並自動啟用 `.githooks` 與驗證（`-TrackedOnly` 會忽略您的額外自建技能，不會誤報錯誤）：
+- **Windows (PowerShell)**：
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File "$HOME\.gemini\config\scripts\sync-config.ps1"
+  ```
+- **macOS / Linux (Bash)**：
+  ```bash
+  bash "$HOME/.gemini/config/scripts/sync-config.sh"
+  ```
+*(若該電腦曾直接修改過官方追蹤檔，工具會安全中止並列出清單保護您的修改；確認覆蓋升級可加上 `-BackupOnLocalModify` / `--backup-on-local-modify` 先自動備份再升級。)*
 
-### macOS / Linux (Bash)
-```bash
-TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-[ -d "$HOME/.gemini/config" ] && mv "$HOME/.gemini/config" "$HOME/.gemini/backup_$TIMESTAMP"
-git clone https://github.com/sung1102/Antigravity-IDE-Auto-Setting.git "$HOME/.gemini/config"
-git -C "$HOME/.gemini/config" config core.hooksPath .githooks
-```
+### 情況 B：全新電腦，或曾經手動複製舊版 V1（沒有 `.git`）的電腦
+執行下方單行指令，會先下載至暫存並**原位無損接管 `~/.gemini/config`**（僅備份撞名的舊版官方檔至 `~/.gemini/backup_pre_mount_*`，自建技能與 `mcp_config.json` 原封不動）：
+- **Windows (PowerShell)**：
+  ```powershell
+  $t="$env:TEMP\agy-cfg-$(Get-Date -Format 'yyyyMMddHHmmss')"; git clone https://github.com/sung1102/Antigravity-IDE-Auto-Setting.git $t; if ($LASTEXITCODE -eq 0) { powershell -ExecutionPolicy Bypass -File "$t\scripts\sync-config.ps1" }; if (Test-Path $t) { Remove-Item -Recurse -Force $t }
+  ```
+- **macOS / Linux (Bash)**：
+  ```bash
+  t="$(mktemp -d)" && git clone https://github.com/sung1102/Antigravity-IDE-Auto-Setting.git "$t" && bash "$t/scripts/sync-config.sh" && rm -rf "$t"
+  ```
+
+### 情況 C：分享給他人／團隊其他開發者使用
+- 由於 `https://github.com/sung1102/Antigravity-IDE-Auto-Setting.git` 為私人倉庫，對方電腦須具備存取權限（或指定內部鏡像／隨身碟路徑）：
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File ".\scripts\sync-config.ps1" -RepoUrl "<團隊倉庫網址或本機路徑>"
+  ```
 
 ---
 
-## 六、 跨電腦同步更新
+## 六、 維護本規則庫與手動自檢
 
-- **在新電腦拉取最新設定與手冊**：
-  ```bash
-  cd ~/.gemini/config && git pull origin main && git config core.hooksPath .githooks
-  ```
-- **修改規則或技能後先跑一鍵自檢**（Windows PowerShell；已啟用 `.githooks/pre-commit` 時 `git commit` 亦會自動攔截）：
+- **修改規則、技能或範本後跑一鍵自檢**（Windows PowerShell；已啟用 `.githooks/pre-commit` 時 `git commit` 亦會自動攔截）：
   ```powershell
   powershell -ExecutionPolicy Bypass -File .\scripts\verify-repo.ps1
   ```
-- **推送修改後的設定或範本**：
-  ```bash
-  cd ~/.gemini/config && git add . && git commit -m "chore: update config" && git push origin main
+- **推送修改後的設定或範本**（PowerShell）：
+  ```powershell
+  git -C "$HOME\.gemini\config" status -sb; git -C "$HOME\.gemini\config" add .; git -C "$HOME\.gemini\config" commit -m "chore: update config"; git -C "$HOME\.gemini\config" push origin main
   ```

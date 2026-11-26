@@ -10,7 +10,8 @@
 [CmdletBinding()]
 param(
     [string]$RepoRoot = '',
-    [switch]$SkipGitAppendCheck
+    [switch]$SkipGitAppendCheck,
+    [switch]$TrackedOnly
 )
 
 Set-StrictMode -Version Latest
@@ -88,9 +89,26 @@ function Read-Utf8Lines {
 
 Write-Host "Running repository verification lever on: $RepoRoot" -ForegroundColor Cyan
 
+$trackedSet = $null
+if ($TrackedOnly) {
+    $trackedList = @(& git -C $RepoRoot -c core.quotepath=false ls-files)
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to list tracked files with git ls-files on $RepoRoot"
+    }
+    $trackedSet = New-Object System.Collections.Generic.HashSet[string] ([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($tp in $trackedList) {
+        if (-not [string]::IsNullOrWhiteSpace($tp)) {
+            [void]$trackedSet.Add(($tp -replace '/', '\'))
+        }
+    }
+}
+
 # 1. Rules YAML Frontmatter Check
 $rulesDir = Join-Path $RepoRoot 'rules'
 $ruleFiles = @(Get-ChildItem -Path $rulesDir -Filter '*.md' -File -ErrorAction SilentlyContinue)
+if ($TrackedOnly) {
+    $ruleFiles = @($ruleFiles | Where-Object { $trackedSet.Contains($_.FullName.Substring($RepoRoot.Length + 1)) })
+}
 if ($ruleFiles.Count -eq 0) {
     Add-CheckResult -Name 'Rules Frontmatter' -Passed $false -Detail 'No markdown files found in rules/'
 }
@@ -118,6 +136,10 @@ $skillsDir = Join-Path $RepoRoot 'skills'
 $skillDirs = @(Get-ChildItem -Path $skillsDir -Directory -ErrorAction SilentlyContinue | Sort-Object Name)
 $localSkillsDir = Join-Path $RepoRoot '.agents\skills'
 $localSkillDirs = @(Get-ChildItem -Path $localSkillsDir -Directory -ErrorAction SilentlyContinue | Sort-Object Name)
+if ($TrackedOnly) {
+    $skillDirs = @($skillDirs | Where-Object { $trackedSet.Contains("skills\$($_.Name)\SKILL.md") })
+    $localSkillDirs = @($localSkillDirs | Where-Object { $trackedSet.Contains(".agents\skills\$($_.Name)\SKILL.md") })
+}
 $skillErrors = @()
 
 function Test-SkillDirectorySet {
@@ -221,6 +243,9 @@ Add-CheckResult -Name 'Link Integrity' -Passed ($linkErrors.Count -eq 0) -Detail
 
 # 4. Markdown Code Fence Pairing Check
 $mdFiles = @(Get-ChildItem -Path $RepoRoot -Filter '*.md' -Recurse -File | Where-Object { $_.FullName -notmatch '\\\.git\\' })
+if ($TrackedOnly) {
+    $mdFiles = @($mdFiles | Where-Object { $trackedSet.Contains($_.FullName.Substring($RepoRoot.Length + 1)) })
+}
 $fenceErrors = @()
 foreach ($mf in $mdFiles) {
     $lines = Read-Utf8Lines -Path $mf.FullName
@@ -250,13 +275,16 @@ foreach ($sd in $skillDirs) {
         $indexErrors += "README.md missing skill '$($sd.Name)'"
     }
 }
-$verifyScript = Join-Path $RepoRoot 'scripts\verify-repo.ps1'
-if (Test-Path $verifyScript) {
-    if ($geminiText -notmatch 'verify-repo\.ps1') {
-        $indexErrors += 'GEMINI.md missing scripts/verify-repo.ps1'
-    }
-    if ($readmeText -notmatch 'verify-repo\.ps1') {
-        $indexErrors += 'README.md missing scripts/verify-repo.ps1'
+foreach ($assetName in @('verify-repo.ps1', 'sync-config.ps1', 'sync-config.sh')) {
+    $scriptPath = Join-Path $RepoRoot "scripts\$assetName"
+    if (Test-Path $scriptPath) {
+        $esc = [regex]::Escape($assetName)
+        if ($geminiText -notmatch $esc) {
+            $indexErrors += "GEMINI.md missing scripts/$assetName"
+        }
+        if ($readmeText -notmatch $esc) {
+            $indexErrors += "README.md missing scripts/$assetName"
+        }
     }
 }
 $requiredAssets = @('Feature_Map\.md', 'Architecture_and_Workflow\.md', 'pre-commit', '\.gitattributes')
@@ -271,7 +299,7 @@ foreach ($assetPattern in $requiredAssets) {
         $indexErrors += "README.md missing reference matching '$assetPattern'"
     }
 }
-Add-CheckResult -Name 'SSOT Index Sync' -Passed ($indexErrors.Count -eq 0) -Detail $(if ($indexErrors.Count -eq 0) { "GEMINI.md and README.md cover all $($skillDirs.Count) global skills, $($localSkillDirs.Count) local verify skill(s), docs, .gitattributes, pre-commit, and verify-repo.ps1" } else { $indexErrors -join '; ' })
+Add-CheckResult -Name 'SSOT Index Sync' -Passed ($indexErrors.Count -eq 0) -Detail $(if ($indexErrors.Count -eq 0) { "GEMINI.md and README.md cover all $($skillDirs.Count) global skills, $($localSkillDirs.Count) local verify skill(s), docs, .gitattributes, pre-commit, and scripts" } else { $indexErrors -join '; ' })
 
 # 6. Change_Log.md Append-Only Invariant Check
 $changeLogPath = Join-Path $RepoRoot 'Change_Log.md'
@@ -321,6 +349,8 @@ $featureMapPath = Join-Path $RepoRoot 'docs\Feature_Map.md'
 $archGuidePath = Join-Path $RepoRoot 'docs\Architecture_and_Workflow.md'
 $preCommitHook = Join-Path $RepoRoot '.githooks\pre-commit'
 $gitAttrsPath = Join-Path $RepoRoot '.gitattributes'
+$syncPsPath = Join-Path $RepoRoot 'scripts\sync-config.ps1'
+$syncShPath = Join-Path $RepoRoot 'scripts\sync-config.sh'
 $verifyLocalSkills = @($localSkillDirs | Where-Object { $_.Name -like 'verify-*' })
 
 if (-not (Test-Path $featureMapPath)) { $dogfoodErrors += 'Missing docs/Feature_Map.md' }
@@ -328,6 +358,8 @@ if (-not (Test-Path $archGuidePath)) { $dogfoodErrors += 'Missing docs/Architect
 if ($verifyLocalSkills.Count -eq 0) { $dogfoodErrors += 'Missing .agents/skills/verify-* skill' }
 if (-not (Test-Path $preCommitHook)) { $dogfoodErrors += 'Missing .githooks/pre-commit' }
 if (-not (Test-Path $gitAttrsPath)) { $dogfoodErrors += 'Missing .gitattributes' }
+if (-not (Test-Path $syncPsPath)) { $dogfoodErrors += 'Missing scripts/sync-config.ps1' }
+if (-not (Test-Path $syncShPath)) { $dogfoodErrors += 'Missing scripts/sync-config.sh' }
 if ($readmeText -match '01~03') {
     $dogfoodErrors += "README.md contains stale '01~03' reference (expected 01~04 + Feature_Map)"
 }

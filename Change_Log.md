@@ -118,3 +118,15 @@ This file is strictly **APPEND ONLY**. Never reorder, delete, or rewrite histori
   - Closed the guardrail loop across `software-architecture-review` (also fixed `INotifyPropertyChanged` typo), `rtl-hardware-review`, and `protocol-stack-contract-review`.
   - Added `docs/Architecture_and_Workflow.md` and README Section 2 overview diagram detailing the layered architecture, `MODE` transitions, Phases 1–5 closed loop, all 7+1 skills, and delta onboarding paths.
   - Standardized local verify skill name to lowercase-hyphenated `.agents/skills/verify-antigravity-ide-auto-setting/SKILL.md`, made `GEMINI.md` path portable (`%USERPROFILE%\.gemini\config`), and upgraded `scripts/verify-repo.ps1` to validate lowercase skill names, `docs/*.md` links, `.gitattributes`, and `Architecture_and_Workflow.md`.
+
+
+---
+
+## [2026-11-26] Add Non-Destructive Cross-PC Mount & V1-to-V2 Sync Tool
+- **Type**: Feature / Cross-Machine Deployment & Custom-Skill Protection
+- **Base Commit**: `40cb48c`
+- **Details**:
+  - Created Git safety backup branch `backup/Antigravity-IDE-Auto-Setting_20261126_103142`.
+  - Added `scripts/sync-config.ps1` and `scripts/sync-config.sh` handling fresh installs, non-destructive in-place mounts (preserving `mcp_config.json`, `plugins/`, `projects/`, and user-built custom skills), and safe V1-to-V2 Git fast-forward upgrades (guarding local tracked edits with `-BackupOnLocalModify`).
+  - Added `-TrackedOnly` switch to `scripts/verify-repo.ps1` so target machines with personal untracked skills pass verification cleanly, and added `sync-config.ps1`/`.sh` to SSOT index & Dogfooding checks.
+  - Updated `README.md`, `GEMINI.md`, `docs/Feature_Map.md`, `docs/Architecture_and_Workflow.md`, and `templates/project-onboarding-prompts.md` (with Step 0 global-brain version pre-flight).

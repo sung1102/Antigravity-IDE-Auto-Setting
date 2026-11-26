@@ -73,6 +73,8 @@ flowchart LR
 
 ## 四、 專案導入與「差分增量升級」實戰路線
 
+> **Step 0 前置鐵則（跨電腦必看）**：開工前請先確認該台電腦的 `~/.gemini/config` 已透過 `scripts/sync-config.ps1`（Windows）或 `scripts/sync-config.sh`（macOS/Linux）升級至最新 V2，才能確保提示詞所調用的技能都已就位（不會刪除個人自建技能與 `mcp_config.json`）。
+
 依照專案所處狀態，建議於**該專案自己的獨立工作區視窗**執行對應流程（詳見 `templates/project-onboarding-prompts.md`）：
 
 1. **情境 1 — 全新專案從零開發**

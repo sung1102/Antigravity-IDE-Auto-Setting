@@ -2,6 +2,8 @@
 
 本手冊提供三大開發情境的標準填空範本。使用者只需複製對應情境區塊，將所有 `XXXX` 替換為實際專案資訊，直接貼入 Antigravity IDE 對話視窗即可啟動自動化流程。
 
+> **Step 0（前置版本確認）**：換新電腦或剛升級全域技能時，請先確保該電腦的 `~/.gemini/config` 已更新至最新版（Windows 執行 `powershell -ExecutionPolicy Bypass -File "$HOME\.gemini\config\scripts\sync-config.ps1"`；macOS/Linux 執行 `bash "$HOME/.gemini/config/scripts/sync-config.sh"`）。該工具會完整保留您的個人自建技能與 `mcp_config.json`。
+
 ---
 
 ## 情境 1：全新專案從零開發 (Brand-New Project)
@@ -19,6 +21,7 @@
 - 通訊與外設介面：XXXX_通訊介面（例如：USB 3.0 FIFO / UART / PCIe / I2C / 無）
 
 【請依序執行以下流程】
+0. （前置確認）確認本機 ~/.gemini/config 已同步至最新 V2 技能庫（若落後遠端請先提醒執行 sync-config.ps1 / sync-config.sh）。
 1. 在本機專案目錄執行 git init，依技術棧自動建立標準 .gitignore。
 2. 建立專案骨幹、README.md、Change_Log.md（初始化第一筆記錄）、docs/Feature_Map.md 與 VerificationCoverageMatrix.md。
 3. 建立專案記憶索引檔 GEMINI.md：
@@ -54,6 +57,7 @@
 - 凍結不可動之黃金路徑：XXXX_需保留的既有介面或暫存器契約
 
 【請依序執行以下流程】
+0. （前置確認）確認本機 ~/.gemini/config 已同步至最新 V2 技能庫（若落後遠端請先提醒執行 sync-config.ps1 / sync-config.sh）。
 1. 檢查本機 Git 狀態。若尚未建立 Git，先建立適當的 .gitignore（排除暫存與編譯垃圾），執行 git init 並 commit 作為原始基準版本（Baseline）；絕不額外複製整包實體備份資料夾。
 2. 掃描大型暫存檔（編譯暫存、波形、.runs、bin/obj），確認 .gitignore 完整防護。
 3. 執行 MODE: TRACE_ONLY 深度分析（調用 software/rtl/protocol 審核技能），生成下列文件：
@@ -93,6 +97,7 @@
 - 既有紀錄檔位置：XXXX_既有變更紀錄路徑（例如：根目錄 Change_Log.md，若無則由 AI 新建）
 
 【請依序執行以下流程】
+0. （前置確認）確認本機 ~/.gemini/config 已同步至最新 V2 技能庫（若落後遠端請先提醒執行 sync-config.ps1 / sync-config.sh）。
 1. 執行 git status 與 git diff，確認無未提交的衝突內容。
 2. 建立升級安全備份標籤：
    - Windows PowerShell：`git tag "backup/pre-governance-upgrade-$(Get-Date -Format 'yyyyMMdd_HHmmss')"`

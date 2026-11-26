@@ -21,9 +21,10 @@
 | `F-04` | 倉庫靜態校驗槓桿與負向攔截 | `scripts/verify-repo.ps1` | 正向跑本倉；負向以 `-SkipGitAppendCheck` 跑毀損夾具 | 正向 Exit Code `0`；負向偵測錯名/斷鏈/圍欄失衡/漂移並回傳 Exit Code `1` | 必須相容 Windows PowerShell 5.1（勿依賴 PS 7 專用運算子如 `&&`） |
 | `F-05` | 自我驗證技能與 `pre-commit` 門檻 | `.agents/skills/verify-antigravity-ide-auto-setting/SKILL.md`、`.githooks/pre-commit` | 執行 `git config --get core.hooksPath` 與真實 `git commit` 觸發 Hook | `core.hooksPath` 為 `.githooks`，且 `git commit` 自動印出 `[pre-commit]` 與 `PASS` | 新環境 `git clone` 不會自動啟用 `.githooks`，須按 `README.md` 執行一次 `git config` |
 | `F-06` | Append-Only 歷史與 SSOT 索引不變量 | `Change_Log.md`、`GEMINI.md`、`README.md`、`VerificationCoverageMatrix.md`、`docs/Architecture_and_Workflow.md` | 執行 `verify-repo.ps1` Check 5 & 6 (`SSOT Index Sync` / `Change_Log Append-Only`) | 所有歷史行與 `HEAD:Change_Log.md` 逐行一致，所有技能與資產皆有索引 | `Change_Log.md` 嚴禁修改或重排歷史條目；未實跑項目嚴禁填寫 `PASS` |
+| `F-07` | 跨電腦無損掛載與 V1→V2 升級工具 | `scripts/sync-config.ps1`、`scripts/sync-config.sh`、`verify-repo.ps1 -TrackedOnly` | 測試全新安裝、無 `.git` 原位接管、有 `.git` V1→V2 升級並保留自建技能與 `mcp_config.json` | Exit Code `0`；自建技能與 MCP 原封保留，撞名或修改檔先備份不硬蓋 | 嚴禁動到未追蹤的自建技能資料夾；dirty 追蹤檔未帶 `-BackupOnLocalModify` 須安全中止 |
 
 ---
 
 ## 3. 漂移巡檢紀錄 (Drift Audit Status)
 - **最後與 Tier 1 實碼核對日期**：`2026-11-26`
-- **上次巡檢發現**：`已納入 docs/Architecture_and_Workflow.md 架構流程詳解、.gitattributes 行尾鎖定、Windows/Bash 雙版本指令與小寫連字號 verify-antigravity-ide-auto-setting`
+- **上次巡檢發現**：`已新增 scripts/sync-config.ps1/.sh 無損掛載升級工具與 verify-repo.ps1 -TrackedOnly 支援，並在暫存夾具實測保留自建技能與 MCP 設定`
