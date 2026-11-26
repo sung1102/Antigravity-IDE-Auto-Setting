@@ -17,6 +17,7 @@ description: 主控工程審核技能。當使用者以自然語言描述錯誤�
    - **涉及 LA / 示波器 / 抓包實測逆向分析、或規格／參數／Bug 修正** → 強制調用 `observed-baseline-and-ssot-sync`（確保先 100% 原樣仿照、有可疑先提報不擅自增刪，且修正確認後回溯同步早期文件與複本）。
    - **涉及任何專案初始化、檔案修改、備份、歷史紀錄或測試驗證** → 強制調用 `change-safety-and-verification`。
    - **建置專案可執行驗證槓桿（`.agents/skills/verify-<project>/`）、`docs/Feature_Map.md` 或同類錯誤重複發生需硬化為靜態／自動檢查** → 調用 `verification-harness-builder`。
+   - **詢問每週進度盤點、專案健檢、功能優化排查或下週規劃（或 `/automation` 週報排程）** → 調用 `weekly-project-review-and-roadmap`。
 
 ## 二、 工作模式（MODE）自動判定規則
 依使用者自然語言意圖與風險高低，自動選擇以下四種模式之一，並在回覆第一行明確標示：

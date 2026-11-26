@@ -1,6 +1,6 @@
 # 技能應用架構流程與使用詳解 (Architecture & Workflow Guide)
 
-本文件說明 `Antigravity-IDE-Auto-Setting` 各層規則、7 大全域技能與專案在地驗證資產之間的**架構分工、工作模式切換（MODE）、五階段閉環流程、實戰導入路線與護欄連動機制**。
+本文件說明 `Antigravity-IDE-Auto-Setting` 各層規則、8 大全域技能與專案在地驗證資產之間的**架構分工、工作模式切換（MODE）、五階段閉環流程、實戰導入路線與護欄連動機制**。
 
 ---
 
@@ -15,6 +15,7 @@ flowchart TD
     L1 --> L2B["Layer 2B: 實測基準與 SSOT 同步\nobserved-baseline-and-ssot-sync"]
     L1 --> L2C["Layer 2C: 變更安全與回滾驗證\nchange-safety-and-verification"]
     L1 --> L2D["Layer 2D: 驗證槓桿與錯誤硬化\nverification-harness-builder"]
+    L1 --> L2E["Layer 2E: 週期盤點與優化規劃\nweekly-project-review-and-roadmap"]
     L2A --> L3["Layer 3: 專案在地驗證資產\ndocs/Feature_Map.md + .agents/skills/verify-<project>/"]
     L2D --> L3
     L2C --> L4["Layer 4: 自動化硬性門檻\nscripts/verify + .githooks/pre-commit + .agents/hooks.json"]
@@ -56,7 +57,7 @@ flowchart LR
 
 ---
 
-## 三、 7 大全域技能 ＋ 1 在地技能詳解
+## 三、 8 大全域技能 ＋ 1 在地技能詳解
 
 | 技能名稱 | 觸發時機與定位 | 搭配之關鍵模板 / 清單 | 核心防呆規則與連動 |
 |---|---|---|---|
@@ -67,6 +68,7 @@ flowchart LR
 | `observed-baseline-and-ssot-sync` | **實測逆向與防漂移**：LA/示波器/Sniffer 實測、多輪修正後規格同步 | `skills/observed-baseline-and-ssot-sync/resources/baseline-ssot-checklist.md`、`skills/observed-baseline-and-ssot-sync/resources/suspicious-behavior-report-template.md` | **先 100% 原樣仿照，後外層變通**；有可疑停 `PLAN_ONLY` 提報；修正確認後強制回溯掃描同步舊檔與複本 |
 | `change-safety-and-verification` | **變更安全與紀錄**：任何改碼實作、回滾備份與驗證結案強制調用 | `skills/change-safety-and-verification/resources/verification-template.md` | **Git 優先備份（嚴禁實體拷貝）**、最小純淨 Diff（Unslop）、`Change_Log` Append-Only、`Regression` vs `New Behavior` 證據分離 |
 | `verification-harness-builder` | **可執行槓桿與硬化**：開新/納管/升級專案、建置驗收腳本與重複錯誤升級 | `skills/verification-harness-builder/resources/feature-map-template.md`、`skills/verification-harness-builder/resources/verify-skill-template.md`、`skills/verification-harness-builder/resources/guardrail-snippets.md` | 為專案產出 `docs/Feature_Map.md` 與 `.agents/skills/verify-<project>/`，區分 `Doc Drift` vs `Product Bug`，推動 Prose → Guardrail 硬化 |
+| `weekly-project-review-and-roadmap` | **每週盤點與路線規劃**：週期進度彙整、缺口掃描、全專案優化排查與下週規劃 | `skills/weekly-project-review-and-roadmap/resources/weekly-review-template.md`、`skills/weekly-project-review-and-roadmap/resources/automation-prompt-guide.md`、`skills/weekly-project-review-and-roadmap/scripts/collect-weekly-snapshot.ps1` | 嚴守唯讀不改產品碼；先跑快照腳本彙整 Git/矩陣/`TODO`，再產出 `P0~P2` 優化清單與下週規劃（可搭配 `/automation` 存檔 `docs/weekly/YYYY-Www.md`） |
 | `verify-antigravity-ide-auto-setting` | **本倉庫自我驗證（範例）**：修改本全域設定庫時執行之在地技能 | `scripts/verify-repo.ps1`、`.githooks/pre-commit`、`docs/Feature_Map.md` | 示範如何以自動化腳本＋負向夾具測試＋Pre-Commit Hook 守護規則庫本身不漂移 |
 
 ---
@@ -96,3 +98,11 @@ flowchart LR
 - **模糊需求對齊（`PLAN_ONLY`）**：可搭配 Antigravity 的 `/plan` 或 `/grill-me` 先把規格邊界與驗收條件問透再動工。
 - **Web 前端驗收（`VERIFY_ONLY`）**：搭配 `browser` 子代理實測頁面操作、DOM 渲染、Console Errors 與 Network 請求。
 - **高風險獨立盲審**：大範圍修改後，建議另開乾淨上下文或子代理，僅檢視「驗收標準 ＋ `git diff` ＋ 驗證槓桿實際輸出」進行複核，降低確認偏誤。
+
+---
+
+## 六、 每週進度盤點與全專案優化巡檢流程
+
+若專案需每週回顧成果、排查遺留缺口與制定下週計畫，可透過以下兩種模式執行 `weekly-project-review-and-roadmap`：
+1. **即時主動詢問**：在目標專案視窗提出「盤點本週進度、優化建議與下週規劃」，AI 先執行 `collect-weekly-snapshot.ps1` / `.sh` 取得近 7 天實證快照並實跑既有驗證槓桿，再對照領域清單產出 `P0/P1/P2` 優化項目與下週排程。
+2. **搭配 `/automation` 定時產出**：依 `skills/weekly-project-review-and-roadmap/resources/automation-prompt-guide.md` 建立每週背景排程（如 `CRON_TZ=Asia/Taipei 0 17 * * 5`），透過首次試跑授權唯讀命令後，每週自動將週報寫入目標專案 `docs/weekly/YYYY-Www.md`。

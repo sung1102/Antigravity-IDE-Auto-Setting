@@ -62,6 +62,14 @@
             ├── feature-map-template.md
             ├── verify-skill-template.md
             └── guardrail-snippets.md
+    └── weekly-project-review-and-roadmap/                 # H. 每週進度盤點、優化排查與下週規劃技能
+        ├── SKILL.md
+        ├── resources/
+        │   ├── weekly-review-template.md
+        │   └── automation-prompt-guide.md
+        └── scripts/
+            ├── collect-weekly-snapshot.ps1
+            └── collect-weekly-snapshot.sh
 ```
 
 ---
@@ -79,8 +87,9 @@
         ├── 依技術棧調度領域審查：software-architecture-review / rtl-hardware-review / protocol-stack-contract-review
         ├── 實測仿照與防漂移　：observed-baseline-and-ssot-sync（先 100% 原樣仿照；可疑退回 PLAN_ONLY；Tier 1>2>3 回溯同步）
         ├── 版本與最小變更安全：change-safety-and-verification（Git-only 回滾、Unslop、Change_Log Append-Only）
-        └── 專案驗證槓桿建置　：verification-harness-builder
-                                 └── 產出專案在地 docs/Feature_Map.md + .agents/skills/verify-* + 硬性 Lint/Hook 門檻
+        ├── 專案驗證槓桿建置　：verification-harness-builder
+        │                        └── 產出專案在地 docs/Feature_Map.md + .agents/skills/verify-* + 硬性 Lint/Hook 門檻
+        └── 週期進度與優化排查：weekly-project-review-and-roadmap（唯讀快照 + 缺口盤點 + P0~P2 優化與下週規劃）
 ```
 
 ---
@@ -155,3 +164,16 @@
   ```powershell
   git -C "$HOME\.gemini\config" status -sb; git -C "$HOME\.gemini\config" add .; git -C "$HOME\.gemini\config" commit -m "chore: update config"; git -C "$HOME\.gemini\config" push origin main
   ```
+
+---
+
+## 七、 每週專案進度盤點、優化排查與下週規劃（含 `/automation` 自動排程）
+
+在任何已導入本套件的專案視窗中，只要詢問「**幫我盤點這週進度、排查目前還有哪些可優化項目，並排出下週計畫**」，系統會自動調用 `weekly-project-review-and-roadmap` 技能：
+
+1. **一鍵唯讀快照蒐證（不改動任何產品程式碼）**：
+   自動執行 `collect-weekly-snapshot.ps1` / `.sh`，掃描近 7 天 Git 提交、`backup/*` 未清理分支、`Change_Log.md`、`VerificationCoverageMatrix.md` 中仍為 `FAIL / BLOCKED / NOT RUN` 的缺口、`docs/Feature_Map.md` 漂移狀態與全專案 `TODO / FIXME / HACK / [DEPRECATED]` 技術債。
+2. **實跑驗證與深度優化檢查**：
+   執行該專案的驗證槓桿確認當週健康基準，並依技術棧（軟體 / RTL / 協定）提出分級的 `P0 / P1 / P2` 優化清單與可直接執行的下週步驟計畫。
+3. **進階搭配 `/automation` 全自動週報**：
+   若希望每週固定時段（例如週五 17:00 或週一 09:00）於背景自動產出週報至目標專案的 `docs/weekly/YYYY-Www.md`，可於 IDE 輸入 `/automation`，並直接套用 [`skills/weekly-project-review-and-roadmap/resources/automation-prompt-guide.md`](skills/weekly-project-review-and-roadmap/resources/automation-prompt-guide.md) 內的自包含排程範本。

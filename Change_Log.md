@@ -141,3 +141,15 @@ This file is strictly **APPEND ONLY**. Never reorder, delete, or rewrite histori
   - Created Git safety backup branch `backup/Antigravity-IDE-Auto-Setting_20261126_111432`.
   - Fixed false-positive failure in `scripts/verify-repo.ps1` Check 6 (`Historical line 103 modified`) triggered on Taiwanese Windows PowerShell (`CP950`/`Big5`) where `git show HEAD:Change_Log.md` UTF-8 output (containing `U+2013` en-dash on line 103) was decoded as CP950.
   - Added `Invoke-GitUtf8Text` (`System.Diagnostics.Process` with `StandardOutputEncoding = UTF8`) in `scripts/verify-repo.ps1` and set UTF-8 console/pipeline encoding guards in both `scripts/verify-repo.ps1` and `scripts/sync-config.ps1`.
+
+
+---
+
+## [2026-11-26] Add Weekly Project Review & Roadmap Skill, Snapshot Scripts & Automation Guide
+- **Type**: Feature / Weekly Audit, Planning & Automation Enablement
+- **Base Commit**: `2c4afa3`
+- **Details**:
+  - Created Git safety backup branch `backup/Antigravity-IDE-Auto-Setting_20261126_114851`.
+  - Added 8th global skill `skills/weekly-project-review-and-roadmap/SKILL.md` with `resources/weekly-review-template.md` and `resources/automation-prompt-guide.md` (`/automation` cron setup & self-contained run prompt).
+  - Added read-only cross-platform snapshot collectors `skills/weekly-project-review-and-roadmap/scripts/collect-weekly-snapshot.ps1` (CP950-safe UTF-8) and `collect-weekly-snapshot.sh` scanning recent commits, `backup/*` branches, `Change_Log.md`, `VerificationCoverageMatrix.md` open items, `Feature_Map.md` drift audit, `TODO/FIXME/HACK/DEPRECATED` markers, and verification levers.
+  - Updated `scripts/verify-repo.ps1` Check 3 to resolve skill-local `scripts/` paths properly, and synced `engineering-review-orchestrator/SKILL.md`, `GEMINI.md`, `README.md` (added Section 7 weekly usage guide), `docs/Architecture_and_Workflow.md` (added Section 6), `docs/Feature_Map.md` (`F-08`), and `VerificationCoverageMatrix.md`.

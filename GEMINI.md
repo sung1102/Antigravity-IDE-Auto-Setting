@@ -24,8 +24,9 @@
 | `skills/change-safety-and-verification/` | 變更安全、Git 優先回滾備份、真實驗證制度 | `SKILL.md`, `resources/verification-template.md` | 改動程式碼（`IMPLEMENT`）或驗證時強制調用 |
 | `skills/observed-baseline-and-ssot-sync/` | 實測 100% 仿照優先、可疑先提報與 SSOT 回溯同步 | `SKILL.md`, `resources/baseline-ssot-checklist.md`, `resources/suspicious-behavior-report-template.md` | 涉及 LA/示波器/抓包實測或修正既有規格/Bug 時強制調用 |
 | `skills/verification-harness-builder/` | 專案驗證槓桿（Verification Lever）、Feature Map 與錯誤硬化 | `SKILL.md`, `resources/feature-map-template.md`, `resources/verify-skill-template.md`, `resources/guardrail-snippets.md` | 建置專案自動驗證入口、Feature Map 或重複錯誤硬化時調用 |
+| `skills/weekly-project-review-and-roadmap/` | 每週專案進度盤點、優化排查與下週規劃 | `SKILL.md`, `resources/weekly-review-template.md`, `resources/automation-prompt-guide.md`, `scripts/collect-weekly-snapshot.ps1`, `scripts/collect-weekly-snapshot.sh` | 詢問本週進度、專案健檢、優化建議或設定 `/automation` 週報時調用 |
 | `scripts/` | 本倉庫同步安裝與靜態校驗槓桿 | `scripts/sync-config.ps1`, `scripts/sync-config.sh`, `scripts/verify-repo.ps1` | 跨機掛載/V1→V2 升級執行 `sync-config`；改規則後執行 `powershell -ExecutionPolicy Bypass -File .\scripts\verify-repo.ps1` |
-| `docs/` | 本倉庫行為地圖與技能架構流程詳解 | `docs/Feature_Map.md`, `docs/Architecture_and_Workflow.md` | 查閱本倉庫 `F-01`~`F-06` 驗證對照、整體架構圖與使用流程 |
+| `docs/` | 本倉庫行為地圖與技能架構流程詳解 | `docs/Feature_Map.md`, `docs/Architecture_and_Workflow.md` | 查閱本倉庫 `F-01`~`F-08` 驗證對照、整體架構圖與使用流程 |
 | `.agents/skills/` | 本倉庫專屬自我驗證技能（Dogfooding） | `.agents/skills/verify-antigravity-ide-auto-setting/SKILL.md` | 本倉庫執行自我驗收與負向測試時調用 |
 | `.githooks/` | Git 提交前自動攔截門檻 | `.githooks/pre-commit`, `.gitattributes` | 透過 `git config core.hooksPath .githooks` 啟用自動驗證 |
 | `templates/` | 三大情境專案導入通用提示詞手冊 | `templates/project-onboarding-prompts.md` | 複製填入 `XXXX` 貼至 IDE 對話框 |

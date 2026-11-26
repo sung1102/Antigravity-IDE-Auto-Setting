@@ -267,6 +267,17 @@ foreach ($f in $filesToScan) {
                     $baseDir = $f.DirectoryName
                 }
             }
+            elseif ($rel.StartsWith('scripts/')) {
+                if ($isGeminiRoot -and $null -ne $rowSkillDir -and (Test-Path (Join-Path $rowSkillDir ($rel -replace '/', [System.IO.Path]::DirectorySeparatorChar)))) {
+                    $baseDir = $rowSkillDir
+                }
+                elseif ((-not $isGeminiRoot) -and (Test-Path (Join-Path $f.DirectoryName ($rel -replace '/', [System.IO.Path]::DirectorySeparatorChar)))) {
+                    $baseDir = $f.DirectoryName
+                }
+                else {
+                    $baseDir = $RepoRoot
+                }
+            }
             else {
                 $baseDir = $RepoRoot
             }
