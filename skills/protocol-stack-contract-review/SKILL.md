@@ -37,5 +37,6 @@ description: 通訊協定與跨層契約審核技能。適用於 TL/AL/HAL 分�
 - 當協定參數、封包或時序係由邏輯分析儀（LA）、示波器或抓包實測取得時，第一階段**強制 100% 原樣仿照**（連發次數、發射週期、避碰靜默窗、前置喚醒條件與雙階釋放順序），驗收成功後才可於外層推理變通應用。
 - **嚴禁未經實測授權擅自加入或刪減任何控制步驟**；若懷疑實測時序存在冗餘或異常，強制退回 `PLAN_ONLY` 並調用 `observed-baseline-and-ssot-sync` 提報可疑點與單變因對照計畫，不得先斬後奏。
 
-## 二、 檢查清單參考
-詳細逐項檢查請對照 `resources/protocol-checklist.md`（若涉及實測仿照或修正回溯，並對照 `../observed-baseline-and-ssot-sync/resources/baseline-ssot-checklist.md`）。
+## 二、 檢查清單與護欄參考
+1. 詳細逐項檢查請對照 `resources/protocol-checklist.md`（若涉及實測仿照或修正回溯，並對照 `../observed-baseline-and-ssot-sync/resources/baseline-ssot-checklist.md`）。
+2. **重複錯誤硬化閉環**：一旦透過實測與規格確認封包格式、Length 編碼、Endianness 與 ZLP/Padding 邊界，應依 `../verification-harness-builder/SKILL.md` 與 `../verification-harness-builder/resources/guardrail-snippets.md` 將實測封包固為離線 Golden Trace Replay 自動化回歸斷言，防止後續重構破壞協定契約。

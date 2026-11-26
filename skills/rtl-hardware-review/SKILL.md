@@ -42,3 +42,4 @@ description: 硬體與 RTL 工程審核技能。適用於 Verilog、SystemVerilo
 2. 每次回報必須明確標示**實際已執行項目、未執行項目 (`NOT RUN`) 及硬體實測需求**。
 3. **絕對禁止**僅因 RTL 語法看起來合理就宣稱硬體行為已證明；沒有模擬、合成、時序或板端資料時，結論必須標為 `UNKNOWN / NOT PROVEN`。
 4. 詳細檢查清單請參照 `resources/rtl-checklist.md`。
+5. **重複錯誤硬化閉環**：若反覆出現 Inferred Latch、位寬截斷或實例化漏接端口，應依 `../verification-harness-builder/resources/guardrail-snippets.md` 硬化為 `verilator --lint-only -Werror-*` 與 Self-Checking Batch Simulation 門檻。

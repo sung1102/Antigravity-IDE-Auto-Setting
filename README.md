@@ -10,14 +10,16 @@
 
 ```text
 ~/.gemini/config/
-├── README.md                                              # 跨電腦掛載、同步與手冊導覽
+├── README.md                                              # 跨電腦掛載、架構總覽與手冊導覽
+├── .gitattributes                                         # 跨平台行尾規範（.sh/.githooks=LF, .ps1/.md=CRLF）
 ├── .githooks/
 │   └── pre-commit                                         # Git 提交自動門檻（呼叫 scripts/verify-repo.ps1）
 ├── .agents/
 │   └── skills/
-│       └── verify-Antigravity-IDE-Auto-Setting/
+│       └── verify-antigravity-ide-auto-setting/
 │           └── SKILL.md                                   # 本倉庫專屬自我驗證技能 (Dogfooding Lever)
 ├── docs/
+│   ├── Architecture_and_Workflow.md                       # 技能應用架構圖、五階段閉環流程與詳細說明
 │   └── Feature_Map.md                                     # 本倉庫行為級功能與驗證地圖
 ├── scripts/
 │   └── verify-repo.ps1                                    # 本倉庫一鍵靜態驗證槓桿（Schema / 路徑 / 圍欄 / 索引 / Drift / Append-Only）
@@ -62,7 +64,26 @@
 
 ---
 
-## 二、 如何使用「專案導入通用提示詞手冊」
+## 二、 技能應用架構與核心流程總覽
+
+本套件採 **「全域長駐紅線 → 主控調度 → 領域／治理技能 → 專案在地驗證槓桿」** 分層運作，完整架構圖、各技能詳細觸發條件與實戰路線請見 [`docs/Architecture_and_Workflow.md`](docs/Architecture_and_Workflow.md)：
+
+```text
+[rules/engineering-governance.md (Always-On) + 專案 GEMINI.md]
+        │
+        ▼
+[engineering-review-orchestrator] ──► 自動判定 MODE: TRACE_ONLY -> PLAN_ONLY -> IMPLEMENT -> VERIFY_ONLY
+        │
+        ├── 依技術棧調度領域審查：software-architecture-review / rtl-hardware-review / protocol-stack-contract-review
+        ├── 實測仿照與防漂移　：observed-baseline-and-ssot-sync（先 100% 原樣仿照；可疑退回 PLAN_ONLY；Tier 1>2>3 回溯同步）
+        ├── 版本與最小變更安全：change-safety-and-verification（Git-only 回滾、Unslop、Change_Log Append-Only）
+        └── 專案驗證槓桿建置　：verification-harness-builder
+                                 └── 產出專案在地 docs/Feature_Map.md + .agents/skills/verify-* + 硬性 Lint/Hook 門檻
+```
+
+---
+
+## 三、 如何使用「專案導入通用提示詞手冊」
 
 當您要啟動專案時，打開 `~/.gemini/config/templates/project-onboarding-prompts.md`，依情境複製範本，填入對應的專案資訊即可：
 
@@ -76,7 +97,7 @@
 
 ---
 
-## 三、 工程安全與版本回滾原則（Git 優先，嚴禁重複實體拷貝）
+## 四、 工程安全與版本回滾原則（Git 優先，嚴禁重複實體拷貝）
 
 日常開發或變更時，全域技能遵循嚴格互斥的回滾原則：
 1. **以 Git 分支/標籤為唯一回滾機制**：
@@ -86,7 +107,7 @@
 
 ---
 
-## 四、 在新電腦上一鍵掛載
+## 五、 在新電腦上一鍵掛載
 
 換到新電腦時，在終端機執行對應指令即可完成部署：
 
@@ -108,7 +129,7 @@ git -C "$HOME/.gemini/config" config core.hooksPath .githooks
 
 ---
 
-## 五、 跨電腦同步更新
+## 六、 跨電腦同步更新
 
 - **在新電腦拉取最新設定與手冊**：
   ```bash

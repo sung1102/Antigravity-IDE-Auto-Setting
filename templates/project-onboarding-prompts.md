@@ -94,7 +94,9 @@
 
 【請依序執行以下流程】
 1. 執行 git status 與 git diff，確認無未提交的衝突內容。
-2. 建立升級安全備份標籤：git tag backup/pre-governance-upgrade-$(date +%Y%m%d%H%M%S)。
+2. 建立升級安全備份標籤：
+   - Windows PowerShell：`git tag "backup/pre-governance-upgrade-$(Get-Date -Format 'yyyyMMdd_HHmmss')"`
+   - macOS / Linux Bash：`git tag "backup/pre-governance-upgrade-$(date +%Y%m%d_%H%M%S)"`
 3. 檢視並升級專案治理文件：
    - 檢查/新建 GEMINI.md：整合全域工程審核規則（強制 MODE 標記、TRACE_ONLY 優先、真實證據分級、實測 100% 仿照優先與 Tier 1>2>3 事實基準優先序），並建立專案關鍵模組導覽地圖。
    - 若專案已有歷史實測經驗或反直覺硬體時序，於 `.agents/skills/` 建立專案專屬技能並執行一次過時文件/複本同步掃描（清理或標註 `[DEPRECATED]`）。

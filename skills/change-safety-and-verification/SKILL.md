@@ -22,10 +22,14 @@ description: 變更安全保護、Git 優先版本回滾（嚴禁重複實體拷
   直接執行 `git init`，建立 `.gitignore`，產生初始專案結構後進行 First Commit 並推送到同名 GitHub 私人倉庫。**不產生任何實體備份資料夾。**
 - **狀態 B：現有本地專案（尚未綁定 GitHub）**：
   1. 檢查是否有本地 Git。若無，以現況直接執行 `git init` 並 commit 作為「原始基準版本（Baseline）」，或依使用者意願建立/綁定同名 GitHub 私人倉庫。
-  2. 變更前建立備份分支：`git branch backup/<Project_Key_Name>_$(date +%Y%m%d_%H%M%S)`。
+  2. 變更前建立備份分支：
+     - Windows PowerShell：`$ts = Get-Date -Format 'yyyyMMdd_HHmmss'; git branch "backup/<Project_Key_Name>_$ts"`
+     - macOS / Linux Bash：`git branch "backup/<Project_Key_Name>_$(date +%Y%m%d_%H%M%S)"`
   3. **禁止建立實體備份資料夾**。
 - **狀態 C：已綁定 GitHub 的現有專案**：
-  直接建立備份分支並推送至遠端：`git branch backup/<Project_Key_Name>_$(date +%Y%m%d_%H%M%S)`。
+  直接建立備份分支並推送至遠端：
+  - Windows PowerShell：`$ts = Get-Date -Format 'yyyyMMdd_HHmmss'; git branch "backup/<Project_Key_Name>_$ts"`
+  - macOS / Linux Bash：`git branch "backup/<Project_Key_Name>_$(date +%Y%m%d_%H%M%S)"`
 - **狀態 D（唯一降級例外）：非 Git 且拒絕使用 Git**：
   僅當使用者明確要求不使用 Git 時，才複製實體資料夾 `<Project_Key_Name>_backup_YYYYMMDD_HHMMSS` 作為保底。
 

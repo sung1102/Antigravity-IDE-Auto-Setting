@@ -1,5 +1,5 @@
 ---
-name: verify-Antigravity-IDE-Auto-Setting
+name: verify-antigravity-ide-auto-setting
 description: Antigravity-IDE-Auto-Setting 本倉庫專屬自我驗證技能（Dogfooding Verification Lever）。在修改本倉庫任何規則、技能、模板或文件後執行，包含一鍵靜態校驗、負向護欄測試與 Git Pre-Commit Hook 檢查。
 ---
 
@@ -17,7 +17,7 @@ description: Antigravity-IDE-Auto-Setting 本倉庫專屬自我驗證技能（Do
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\verify-repo.ps1
 ```
-- **通過準則**：Exit Code `0`，`Summary: 7/7 checks passed.`（涵蓋 Rules Frontmatter、Skills Schema、Link Integrity、Markdown Fences、SSOT Index Sync、`Change_Log.md` Append-Only 與 Self-Dogfooding & Drift Gate）。
+- **通過準則**：Exit Code `0`，`Summary: 7/7 checks passed.`（涵蓋 Rules Frontmatter、Skills Schema、Link Integrity、Markdown Fences、SSOT Index Sync、`Change_Log.md` Append-Only 與 Dogfooding & Drift Gate）。
 
 ### Stage B — Hook 生效檢查與負向護欄失效偵測（驗證護欄未退化）
 1. 確認本機 Git Hook 已掛載並可實際執行：
@@ -25,7 +25,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\verify-repo.ps1
    git config --get core.hooksPath
    ```
    預期輸出為 `.githooks`，且於 `git commit` 時會自動觸發 `.githooks/pre-commit`。
-2. 當有改動 `scripts/verify-repo.ps1` 邏輯時，應於獨立暫存目錄（不污染工作區）建立含錯誤 Frontmatter、斷裂相對路徑、未閉合圍欄與過時 `01~03` 字串的測試夾具，執行：
+2. 當有改動 `scripts/verify-repo.ps1` 邏輯時，應於獨立暫存目錄（不污染工作區）建立含錯誤 Frontmatter、非小寫連字號技能名、斷裂相對路徑、未閉合圍欄與過時 `01~03` 字串的測試夾具，執行：
    ```powershell
    powershell -ExecutionPolicy Bypass -File .\scripts\verify-repo.ps1 -RepoRoot <scratch_dir> -SkipGitAppendCheck
    ```

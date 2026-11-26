@@ -28,7 +28,7 @@ description: 軟體架構與程式碼審核技能。適用於 C/C++、Borland C+
 ### 5. 桌面 UI 與 MVVM 專項檢查 (WPF / C# / Desktop UI)
 - 檢查 `View` / `ViewModel` / `Service` / `DI` 綁定關係與生命週期。
 - 檢查跨執行緒更新 UI 是否正確透過 `Dispatcher`（或 `SynchronizationContext`），避免背景執行緒直接操作 `ObservableCollection` 或 UI 元件引發崩潰。
-- 檢查 `ICommand` 的 `CanExecute` 狀態同步、屬性變更通知（`INofityPropertyChanged`）是否觸發無限迴圈或高頻重繪。
+- 檢查 `ICommand` 的 `CanExecute` 狀態同步、屬性變更通知（`INotifyPropertyChanged`）是否觸發無限迴圈或高頻重繪。
 - **鐵則**：不得為了修改方便而將既有 UI/MVVM 架構全部推翻重寫。
 
 ## 二、 變更與驗證原則
@@ -36,3 +36,4 @@ description: 軟體架構與程式碼審核技能。適用於 C/C++、Borland C+
 2. 優先採用**最小、可回滾、可驗證**的變更。
 3. 維持既有功能與公共 API 簽章，除非使用者明確批准破壞性調整（Breaking Changes）。
 4. 詳細逐項檢查請對照 `resources/software-checklist.md`。
+5. **重複錯誤硬化閉環**：若反覆出現未 Dispose、漏 `await`、`async void` 或靜態警告問題，應依 `../verification-harness-builder/resources/guardrail-snippets.md` 硬化為 `.editorconfig` / `Directory.Build.props` / `ruff` 等編譯或 Lint 門檻。

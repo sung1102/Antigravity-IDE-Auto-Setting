@@ -103,3 +103,18 @@ This file is strictly **APPEND ONLY**. Never reorder, delete, or rewrite histori
   - Fixed SSOT Doc Drift in `README.md` (updated Scenario 1–3 summary table from stale `01~03` to `01~04` + `Feature_Map.md` + `.agents/skills/verify-*`, updated directory tree, and documented `git config core.hooksPath .githooks`).
   - Upgraded `scripts/verify-repo.ps1` (7 checks) to validate `.agents/skills/*/SKILL.md` schema, self-dogfooding asset presence, SSOT index coverage, and block stale `01~03` drift in `README.md`.
   - Updated `GEMINI.md` Key Modules Map and `VerificationCoverageMatrix.md`.
+
+
+---
+
+## [2026-11-26] Full Repo Optimization (Report B P0-P2) & Architecture Workflow Guide
+- **Type**: Optimization / Documentation & Guardrail Hardening
+- **Base Commit**: `e8eb91e`
+- **Details**:
+  - Created Git safety backup branch `backup/Antigravity-IDE-Auto-Setting_20261126_100318`.
+  - Added `.gitattributes` to enforce LF on `.sh`/`.githooks/*` and CRLF on `.ps1`/`.md`/`.json`/`.xml`/`.props`, eliminating cross-platform line-ending warnings.
+  - Updated `templates/project-onboarding-prompts.md` and `skills/change-safety-and-verification/SKILL.md` with dual Windows PowerShell and Bash backup commands.
+  - Added Antigravity native `.agents/hooks.json` lifecycle guardrail snippet to `skills/verification-harness-builder/resources/guardrail-snippets.md`.
+  - Closed the guardrail loop across `software-architecture-review` (also fixed `INotifyPropertyChanged` typo), `rtl-hardware-review`, and `protocol-stack-contract-review`.
+  - Added `docs/Architecture_and_Workflow.md` and README Section 2 overview diagram detailing the layered architecture, `MODE` transitions, Phases 1–5 closed loop, all 7+1 skills, and delta onboarding paths.
+  - Standardized local verify skill name to lowercase-hyphenated `.agents/skills/verify-antigravity-ide-auto-setting/SKILL.md`, made `GEMINI.md` path portable (`%USERPROFILE%\.gemini\config`), and upgraded `scripts/verify-repo.ps1` to validate lowercase skill names, `docs/*.md` links, `.gitattributes`, and `Architecture_and_Workflow.md`.

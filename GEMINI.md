@@ -6,7 +6,7 @@
 
 ## 一、 專案核心基本資料
 - **專案名稱**：`Antigravity-IDE-Auto-Setting`
-- **本地掛載路徑**：`~/.gemini/config`（Windows: `C:\Users\csshih\.gemini\config`）
+- **本地掛載路徑**：`~/.gemini/config`（Windows: `%USERPROFILE%\.gemini\config`）
 - **GitHub 私人倉庫**：`https://github.com/sung1102/Antigravity-IDE-Auto-Setting.git`
 - **核心職責**：存放 Antigravity / Antigravity IDE 的全域工程審核規則（Rules）、技能組（Skills）與三大情境專案導入通用提示詞手冊（Templates），支援軟體、韌體、通訊協定與 RTL 硬體專案。
 
@@ -25,9 +25,9 @@
 | `skills/observed-baseline-and-ssot-sync/` | 實測 100% 仿照優先、可疑先提報與 SSOT 回溯同步 | `SKILL.md`, `resources/baseline-ssot-checklist.md`, `resources/suspicious-behavior-report-template.md` | 涉及 LA/示波器/抓包實測或修正既有規格/Bug 時強制調用 |
 | `skills/verification-harness-builder/` | 專案驗證槓桿（Verification Lever）、Feature Map 與錯誤硬化 | `SKILL.md`, `resources/feature-map-template.md`, `resources/verify-skill-template.md`, `resources/guardrail-snippets.md` | 建置專案自動驗證入口、Feature Map 或重複錯誤硬化時調用 |
 | `scripts/` | 本倉庫自動化靜態校驗槓桿 | `scripts/verify-repo.ps1` | 修改規則、技能或手冊後執行 `powershell -ExecutionPolicy Bypass -File .\scripts\verify-repo.ps1` |
-| `docs/` | 本倉庫行為級功能與驗證地圖 | `docs/Feature_Map.md` | 查閱本倉庫 `F-01`~`F-06` 驗證對照與漂移狀態 |
-| `.agents/skills/` | 本倉庫專屬自我驗證技能（Dogfooding） | `.agents/skills/verify-Antigravity-IDE-Auto-Setting/SKILL.md` | 本倉庫執行自我驗收與負向測試時調用 |
-| `.githooks/` | Git 提交前自動攔截門檻 | `.githooks/pre-commit` | 透過 `git config core.hooksPath .githooks` 啟用自動驗證 |
+| `docs/` | 本倉庫行為地圖與技能架構流程詳解 | `docs/Feature_Map.md`, `docs/Architecture_and_Workflow.md` | 查閱本倉庫 `F-01`~`F-06` 驗證對照、整體架構圖與使用流程 |
+| `.agents/skills/` | 本倉庫專屬自我驗證技能（Dogfooding） | `.agents/skills/verify-antigravity-ide-auto-setting/SKILL.md` | 本倉庫執行自我驗收與負向測試時調用 |
+| `.githooks/` | Git 提交前自動攔截門檻 | `.githooks/pre-commit`, `.gitattributes` | 透過 `git config core.hooksPath .githooks` 啟用自動驗證 |
 | `templates/` | 三大情境專案導入通用提示詞手冊 | `templates/project-onboarding-prompts.md` | 複製填入 `XXXX` 貼至 IDE 對話框 |
 | `README.md` | 跨電腦掛載、同步更新與手冊導覽說明 | `README.md` | 查閱一鍵掛載指令 |
 

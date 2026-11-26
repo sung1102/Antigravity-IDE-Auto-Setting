@@ -19,9 +19,11 @@ $ErrorActionPreference = 'Stop'
 if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
     $scriptDir = if (-not [string]::IsNullOrWhiteSpace($PSScriptRoot)) {
         $PSScriptRoot
-    } elseif ($MyInvocation.MyCommand.Path) {
+    }
+    elseif ($MyInvocation.MyCommand.Path) {
         Split-Path -Parent $MyInvocation.MyCommand.Path
-    } else {
+    }
+    else {
         (Get-Location).Path
     }
     $RepoRoot = Split-Path -Parent $scriptDir
@@ -42,7 +44,8 @@ function Add-CheckResult {
     if ($Passed) {
         $script:ChecksPassed++
         Write-Host "[PASS] $Name - $Detail" -ForegroundColor Green
-    } else {
+    }
+    else {
         $script:Failures.Add("$Name : $Detail")
         Write-Host "[FAIL] $Name - $Detail" -ForegroundColor Red
     }
@@ -80,7 +83,7 @@ function Read-Utf8Lines {
         $normalized = $normalized.Substring(0, $normalized.Length - 1)
     }
     if ($normalized.Length -eq 0) { return @() }
-    return ,($normalized -split "`n")
+    return , ($normalized -split "`n")
 }
 
 Write-Host "Running repository verification lever on: $RepoRoot" -ForegroundColor Cyan
@@ -90,7 +93,8 @@ $rulesDir = Join-Path $RepoRoot 'rules'
 $ruleFiles = @(Get-ChildItem -Path $rulesDir -Filter '*.md' -File -ErrorAction SilentlyContinue)
 if ($ruleFiles.Count -eq 0) {
     Add-CheckResult -Name 'Rules Frontmatter' -Passed $false -Detail 'No markdown files found in rules/'
-} else {
+}
+else {
     $ruleErrors = @()
     foreach ($rf in $ruleFiles) {
         $lines = Read-Utf8Lines -Path $rf.FullName
@@ -134,20 +138,24 @@ function Test-SkillDirectorySet {
             $errs += "$Prefix$($sd.Name)/SKILL.md: missing YAML frontmatter"
             continue
         }
-        if (-not $fm.ContainsKey('name') -or $fm['name'] -ne $sd.Name) {
+        if (-not $fm.ContainsKey('name') -or $fm['name'] -cne $sd.Name) {
             $actual = if ($fm.ContainsKey('name')) { $fm['name'] } else { '<missing>' }
             $errs += "$Prefix$($sd.Name)/SKILL.md: frontmatter name '$actual' != folder '$($sd.Name)'"
+        }
+        if ($sd.Name -cnotmatch '^[a-z0-9]+(-[a-z0-9]+)*$') {
+            $errs += "$Prefix$($sd.Name): skill folder name must be lowercase-hyphenated"
         }
         if (-not $fm.ContainsKey('description') -or [string]::IsNullOrWhiteSpace($fm['description'])) {
             $errs += "$Prefix$($sd.Name)/SKILL.md: missing 'description'"
         }
     }
-    return ,$errs
+    return , $errs
 }
 
 if ($skillDirs.Count -eq 0) {
     $skillErrors += 'No skill directories found in skills/'
-} else {
+}
+else {
     $skillErrors += Test-SkillDirectorySet -Dirs $skillDirs -Prefix 'skills/'
 }
 if ($localSkillDirs.Count -gt 0) {
@@ -167,7 +175,7 @@ foreach ($sd in ($skillDirs + $localSkillDirs)) {
     $skillMd = Join-Path $sd.FullName 'SKILL.md'
     if (Test-Path $skillMd) { $filesToScan += Get-Item $skillMd }
 }
-foreach ($rootDoc in @('GEMINI.md', 'README.md')) {
+foreach ($rootDoc in @('GEMINI.md', 'README.md', 'docs\Feature_Map.md', 'docs\Architecture_and_Workflow.md')) {
     $p = Join-Path $RepoRoot $rootDoc
     if (Test-Path $p) { $filesToScan += Get-Item $p }
 }
@@ -189,13 +197,16 @@ foreach ($f in $filesToScan) {
             }
             if ($rel.StartsWith('../')) {
                 $baseDir = $f.DirectoryName
-            } elseif ($rel.StartsWith('resources/')) {
+            }
+            elseif ($rel.StartsWith('resources/')) {
                 if ($isGeminiRoot -and $null -ne $rowSkillDir) {
                     $baseDir = $rowSkillDir
-                } else {
+                }
+                else {
                     $baseDir = $f.DirectoryName
                 }
-            } else {
+            }
+            else {
                 $baseDir = $RepoRoot
             }
             $resolved = Join-Path $baseDir ($rel -replace '/', [System.IO.Path]::DirectorySeparatorChar)
@@ -248,7 +259,11 @@ if (Test-Path $verifyScript) {
         $indexErrors += 'README.md missing scripts/verify-repo.ps1'
     }
 }
-foreach ($assetPattern in @('Feature_Map\.md', 'verify-Antigravity-IDE-Auto-Setting', 'pre-commit')) {
+$requiredAssets = @('Feature_Map\.md', 'Architecture_and_Workflow\.md', 'pre-commit', '\.gitattributes')
+foreach ($lsd in $localSkillDirs) {
+    $requiredAssets += [regex]::Escape($lsd.Name)
+}
+foreach ($assetPattern in $requiredAssets) {
     if ($geminiText -notmatch $assetPattern) {
         $indexErrors += "GEMINI.md missing reference matching '$assetPattern'"
     }
@@ -256,32 +271,37 @@ foreach ($assetPattern in @('Feature_Map\.md', 'verify-Antigravity-IDE-Auto-Sett
         $indexErrors += "README.md missing reference matching '$assetPattern'"
     }
 }
-Add-CheckResult -Name 'SSOT Index Sync' -Passed ($indexErrors.Count -eq 0) -Detail $(if ($indexErrors.Count -eq 0) { "GEMINI.md and README.md cover all $($skillDirs.Count) global skills, local verify skill, Feature_Map, pre-commit, and verify-repo.ps1" } else { $indexErrors -join '; ' })
+Add-CheckResult -Name 'SSOT Index Sync' -Passed ($indexErrors.Count -eq 0) -Detail $(if ($indexErrors.Count -eq 0) { "GEMINI.md and README.md cover all $($skillDirs.Count) global skills, $($localSkillDirs.Count) local verify skill(s), docs, .gitattributes, pre-commit, and verify-repo.ps1" } else { $indexErrors -join '; ' })
 
 # 6. Change_Log.md Append-Only Invariant Check
 $changeLogPath = Join-Path $RepoRoot 'Change_Log.md'
 if ($SkipGitAppendCheck) {
     Write-Host '[INFO] Change_Log Append-Only - Skipped via -SkipGitAppendCheck' -ForegroundColor Yellow
-} elseif (-not (Test-Path $changeLogPath)) {
+}
+elseif (-not (Test-Path $changeLogPath)) {
     Add-CheckResult -Name 'Change_Log Append-Only' -Passed $false -Detail 'Change_Log.md not found'
-} else {
+}
+else {
     $gitExists = Get-Command git -ErrorAction SilentlyContinue
     if ($null -eq $gitExists -or -not (Test-Path (Join-Path $RepoRoot '.git'))) {
         Add-CheckResult -Name 'Change_Log Append-Only' -Passed $false -Detail 'Git repository not detected for append-only verification'
-    } else {
+    }
+    else {
         $headRaw = (& git -C $RepoRoot show 'HEAD:Change_Log.md' 2>$null) -join "`n"
         if ($LASTEXITCODE -ne 0) {
             Add-CheckResult -Name 'Change_Log Append-Only' -Passed $false -Detail 'Unable to read HEAD:Change_Log.md'
-        } else {
+        }
+        else {
             $headNorm = ($headRaw -replace "`r`n", "`n" -replace "`r", "`n").TrimEnd("`n")
-            $headLines = if ($headNorm.Length -eq 0) { @() } else { ,($headNorm -split "`n") }
+            $headLines = if ($headNorm.Length -eq 0) { @() } else { , ($headNorm -split "`n") }
             $currLines = Read-Utf8Lines -Path $changeLogPath
             $appendOk = $true
             $mismatchMsg = ''
             if ($currLines.Count -lt $headLines.Count) {
                 $appendOk = $false
                 $mismatchMsg = "Current line count ($($currLines.Count)) < HEAD line count ($($headLines.Count))"
-            } else {
+            }
+            else {
                 for ($k = 0; $k -lt $headLines.Count; $k++) {
                     if ($currLines[$k] -ne $headLines[$k]) {
                         $appendOk = $false
@@ -298,16 +318,20 @@ if ($SkipGitAppendCheck) {
 # 7. Self-Dogfooding & Readme Drift Gate
 $dogfoodErrors = @()
 $featureMapPath = Join-Path $RepoRoot 'docs\Feature_Map.md'
-$selfVerifySkill = Join-Path $RepoRoot '.agents\skills\verify-Antigravity-IDE-Auto-Setting\SKILL.md'
+$archGuidePath = Join-Path $RepoRoot 'docs\Architecture_and_Workflow.md'
 $preCommitHook = Join-Path $RepoRoot '.githooks\pre-commit'
+$gitAttrsPath = Join-Path $RepoRoot '.gitattributes'
+$verifyLocalSkills = @($localSkillDirs | Where-Object { $_.Name -like 'verify-*' })
 
 if (-not (Test-Path $featureMapPath)) { $dogfoodErrors += 'Missing docs/Feature_Map.md' }
-if (-not (Test-Path $selfVerifySkill)) { $dogfoodErrors += 'Missing .agents/skills/verify-Antigravity-IDE-Auto-Setting/SKILL.md' }
+if (-not (Test-Path $archGuidePath)) { $dogfoodErrors += 'Missing docs/Architecture_and_Workflow.md' }
+if ($verifyLocalSkills.Count -eq 0) { $dogfoodErrors += 'Missing .agents/skills/verify-* skill' }
 if (-not (Test-Path $preCommitHook)) { $dogfoodErrors += 'Missing .githooks/pre-commit' }
+if (-not (Test-Path $gitAttrsPath)) { $dogfoodErrors += 'Missing .gitattributes' }
 if ($readmeText -match '01~03') {
     $dogfoodErrors += "README.md contains stale '01~03' reference (expected 01~04 + Feature_Map)"
 }
-Add-CheckResult -Name 'Dogfooding & Drift Gate' -Passed ($dogfoodErrors.Count -eq 0) -Detail $(if ($dogfoodErrors.Count -eq 0) { 'Self-dogfooding assets present and README.md free of stale 01~03 drift' } else { $dogfoodErrors -join '; ' })
+Add-CheckResult -Name 'Dogfooding & Drift Gate' -Passed ($dogfoodErrors.Count -eq 0) -Detail $(if ($dogfoodErrors.Count -eq 0) { 'Self-dogfooding assets, .gitattributes, Architecture guide, and README drift check all pass' } else { $dogfoodErrors -join '; ' })
 
 Write-Host ''
 Write-Host "Summary: $($script:ChecksPassed)/$($script:ChecksRun) checks passed." -ForegroundColor $(if ($script:Failures.Count -eq 0) { 'Green' } else { 'Red' })

@@ -75,3 +75,40 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 pytest -q
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 ```
+
+---
+
+## 5. Antigravity 原生 `.agents/hooks.json` 生命週期護欄範本
+> 說明：與僅在 `git commit` 觸發的 `.githooks/pre-commit` 不同，`.agents/hooks.json` 會在 Agent 工具執行前後與結束前**同步阻塞執行**（支援 `SessionStart`、`PreToolUse`、`PostToolUse`、`PreInvocation`、`PostInvocation`、`Stop`；僅建議放入快速低成本檢核，避免拖慢每輪推論）。
+
+```json
+{
+  "post-edit-lint": {
+    "PostToolUse": [
+      {
+        "matcher": "edit_file|write_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File ./scripts/quick-lint.ps1",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "stop-verify-gate": {
+    "enabled": false,
+    "Stop": [
+      {
+        "type": "command",
+        "command": "powershell -ExecutionPolicy Bypass -File ./scripts/check-stop-guard.ps1",
+        "timeout": 15
+      }
+    ]
+  }
+}
+```
+- **注意事項**：
+  - `Stop` Hook 若回傳 `{"decision": "continue", "reason": "..."}` 會強制 Agent 繼續迴圈；撰寫 `check-stop-guard` 腳本時務必檢查傳入 JSON 的 `continuationActive` 欄位，避免無窮迴圈。
+  - Windows 環境中 `hooks.json` 的 `command` 係透過 `cmd /c` 執行（工作目錄為 `.agents/`），請確保腳本路徑與 exit code 處理相容。
