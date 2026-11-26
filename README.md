@@ -62,14 +62,23 @@
             ├── feature-map-template.md
             ├── verify-skill-template.md
             └── guardrail-snippets.md
-    └── weekly-project-review-and-roadmap/                 # H. 每週進度盤點、優化排查與下週規劃技能
+    ├── weekly-project-review-and-roadmap/                 # H. 每週進度盤點、優化排查與下週規劃技能
+    │   ├── SKILL.md
+    │   ├── resources/
+    │   │   ├── weekly-review-template.md
+    │   │   └── automation-prompt-guide.md
+    │   └── scripts/
+    │       ├── collect-weekly-snapshot.ps1
+    │       └── collect-weekly-snapshot.sh
+    └── release-packaging-and-changelog/                   # I. 版本發布、燒錄與執行檔追溯暨日誌生成技能
         ├── SKILL.md
         ├── resources/
-        │   ├── weekly-review-template.md
-        │   └── automation-prompt-guide.md
+        │   ├── release-checklist.md
+        │   ├── release-notes-template.md
+        │   └── release-manifest-example.json
         └── scripts/
-            ├── collect-weekly-snapshot.ps1
-            └── collect-weekly-snapshot.sh
+            ├── create-release-bundle.ps1
+            └── create-release-bundle.sh
 ```
 
 ---
@@ -89,7 +98,8 @@
         ├── 版本與最小變更安全：change-safety-and-verification（Git-only 回滾、Unslop、Change_Log Append-Only）
         ├── 專案驗證槓桿建置　：verification-harness-builder
         │                        └── 產出專案在地 docs/Feature_Map.md + .agents/skills/verify-* + 硬性 Lint/Hook 門檻
-        └── 週期進度與優化排查：weekly-project-review-and-roadmap（唯讀快照 + 缺口盤點 + P0~P2 優化與下週規劃）
+        ├── 週期進度與優化排查：weekly-project-review-and-roadmap（唯讀快照 + 缺口盤點 + P0~P2 優化與下週規劃）
+        └── 發布打包與更新日誌：release-packaging-and-changelog（Clean Gate + SW↔FW↔RTL 相容矩陣 + SHA256 + Release Notes/Tag）
 ```
 
 ---
@@ -177,3 +187,25 @@
    執行該專案的驗證槓桿確認當週健康基準，並依技術棧（軟體 / RTL / 協定）提出分級的 `P0 / P1 / P2` 優化清單與可直接執行的下週步驟計畫。
 3. **進階搭配 `/automation` 全自動週報**：
    若希望每週固定時段（例如週五 17:00 或週一 09:00）於背景自動產出週報至目標專案的 `docs/weekly/YYYY-Www.md`，可於 IDE 輸入 `/automation`，並直接套用 [`skills/weekly-project-review-and-roadmap/resources/automation-prompt-guide.md`](skills/weekly-project-review-and-roadmap/resources/automation-prompt-guide.md) 內的自包含排程範本。
+
+---
+
+## 八、 版本發布打包、燒錄與執行檔追溯暨更新紀錄（SW + FW + RTL）
+
+當軟體（`.exe` / `.msi` / `.zip`）、韌體（`.hex` / `.bin` / `.elf`）或 FPGA RTL（`.bit` / `.mcs` / `.sof` / `.ltx`）準備發布給測試或現場團隊時，在該專案對話視窗詢問「**準備發布 `vX.Y.Z`，請整理燒錄檔／執行檔、核對版本相容性並產出更新說明**」，系統會自動調用 [`skills/release-packaging-and-changelog/SKILL.md`](skills/release-packaging-and-changelog/SKILL.md)：
+
+1. **發布門檻與雙軌追溯**：
+   - 嚴格執行 Clean Worktree Gate 與領域檢查（軟體測試／內嵌版號；RTL 須確認 STA `WNS >= 0`, `TNS == 0` 與 `HW_VER`/`GIT_HASH` 暫存器）；尚未實體上板驗證者自動標示 `-rc.N` 並誠實列為 `NOT RUN` / `BLOCKED`。
+   - 支援 SW / FW / RTL 各自獨立演進，同時以系統統一 Release Tag 與 **SW ↔ FW ↔ RTL 相容矩陣** 鎖定最低匹配下限。
+2. **一鍵打包、SHA-256 校驗與自動生成 Manifest／草稿**：
+   - **Windows (PowerShell)**：
+     ```powershell
+     powershell -ExecutionPolicy Bypass -File "$HOME\.gemini\config\skills\release-packaging-and-changelog\scripts\create-release-bundle.ps1" -ProjectRoot . -Version v1.2.0 -ArtifactPaths ".\build\App.exe,.\fpga\out\top.bit,.\fpga\out\top.mcs"
+     ```
+   - **macOS / Linux (Bash)**：
+     ```bash
+     bash "$HOME/.gemini/config/skills/release-packaging-and-changelog/scripts/create-release-bundle.sh" . v1.2.0 ./build/app ./fpga/out/top.bit ./fpga/out/top.mcs
+     ```
+   - 大型二進位交付包輸出至已 `.gitignore` 排除的 `releases/<Project>_<Version>/`（不汙染 Git 歷史），同時自動產出 `SHA256SUMS.txt`、`release-manifest.json` 與自上次 Tag 以來提交軌跡之 `Release_Notes_DRAFT.md`。
+3. **正式 Release Notes、Append-Only `Change_Log.md` 與 Annotated Tag**：
+   - 依 [`skills/release-packaging-and-changelog/resources/release-notes-template.md`](skills/release-packaging-and-changelog/resources/release-notes-template.md) 產出存於目標專案 `<ProjectRoot>/docs/releases/<Version>_Release_Notes.md` 的更新說明與 5 分鐘回滾 SOP，同步以 **APPEND ONLY** 追加 `Change_Log.md` 並建立 `git tag -a <Version>`（搭配 GitHub CLI 時可由使用者或授權流程上傳至 GitHub Releases）。

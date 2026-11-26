@@ -18,6 +18,7 @@ description: 主控工程審核技能。當使用者以自然語言描述錯誤�
    - **涉及任何專案初始化、檔案修改、備份、歷史紀錄或測試驗證** → 強制調用 `change-safety-and-verification`。
    - **建置專案可執行驗證槓桿（`.agents/skills/verify-<project>/`）、`docs/Feature_Map.md` 或同類錯誤重複發生需硬化為靜態／自動檢查** → 調用 `verification-harness-builder`。
    - **詢問每週進度盤點、專案健檢、功能優化排查或下週規劃（或 `/automation` 週報排程）** → 調用 `weekly-project-review-and-roadmap`。
+   - **準備發布版本、彙整軟體執行檔或 RTL/FPGA 燒錄檔（`.bit`/`.mcs`/`.bin`/`.exe`）、檢查 SW↔FW↔RTL 相容、產出 Release Notes 或建立 Git Tag** → 調用 `release-packaging-and-changelog`。
 
 ## 二、 工作模式（MODE）自動判定規則
 依使用者自然語言意圖與風險高低，自動選擇以下四種模式之一，並在回覆第一行明確標示：

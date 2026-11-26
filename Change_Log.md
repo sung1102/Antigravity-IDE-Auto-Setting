@@ -153,3 +153,11 @@ This file is strictly **APPEND ONLY**. Never reorder, delete, or rewrite histori
   - Added 8th global skill `skills/weekly-project-review-and-roadmap/SKILL.md` with `resources/weekly-review-template.md` and `resources/automation-prompt-guide.md` (`/automation` cron setup & self-contained run prompt).
   - Added read-only cross-platform snapshot collectors `skills/weekly-project-review-and-roadmap/scripts/collect-weekly-snapshot.ps1` (CP950-safe UTF-8) and `collect-weekly-snapshot.sh` scanning recent commits, `backup/*` branches, `Change_Log.md`, `VerificationCoverageMatrix.md` open items, `Feature_Map.md` drift audit, `TODO/FIXME/HACK/DEPRECATED` markers, and verification levers.
   - Updated `scripts/verify-repo.ps1` Check 3 to resolve skill-local `scripts/` paths properly, and synced `engineering-review-orchestrator/SKILL.md`, `GEMINI.md`, `README.md` (added Section 7 weekly usage guide), `docs/Architecture_and_Workflow.md` (added Section 6), `docs/Feature_Map.md` (`F-08`), and `VerificationCoverageMatrix.md`.
+
+## [2026-11-26] Add Release Packaging, Artifact Traceability & Changelog Skill
+- **Base Commit**: `5ecdf22`
+- **Details**:
+  - Created Git safety backup branch `backup/Antigravity-IDE-Auto-Setting_20261126_143827`.
+  - Added 9th global skill `skills/release-packaging-and-changelog/SKILL.md` with `resources/release-checklist.md`, `resources/release-notes-template.md`, and `resources/release-manifest-example.json` covering SW/FW/RTL release gating, STA (`WNS >= 0`, `TNS == 0`) checks, SW↔FW↔RTL compatibility & embedded fingerprint traceability, binary `.gitignore` isolation, `-rc.N` honest downgrade when board testing is `NOT RUN`, and Annotated Git Tag / GitHub Release workflow.
+  - Added cross-platform release bundle builders `skills/release-packaging-and-changelog/scripts/create-release-bundle.ps1` (Windows PowerShell 5.1+, CP950-safe UTF-8) and `create-release-bundle.sh` (POSIX sh) enforcing Clean Worktree Release Gate, SHA-256 checksums (`SHA256SUMS.txt`), `release-manifest.json`, and `Release_Notes_DRAFT.md`.
+  - Synced `skills/engineering-review-orchestrator/SKILL.md`, `GEMINI.md`, `README.md` (added Section 8 release guide), `docs/Architecture_and_Workflow.md` (added Section 7 and `Layer 2F`), `docs/Feature_Map.md` (`F-09`), and `VerificationCoverageMatrix.md`.

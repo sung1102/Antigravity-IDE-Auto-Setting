@@ -1,6 +1,6 @@
 # 技能應用架構流程與使用詳解 (Architecture & Workflow Guide)
 
-本文件說明 `Antigravity-IDE-Auto-Setting` 各層規則、8 大全域技能與專案在地驗證資產之間的**架構分工、工作模式切換（MODE）、五階段閉環流程、實戰導入路線與護欄連動機制**。
+本文件說明 `Antigravity-IDE-Auto-Setting` 各層規則、9 大全域技能與專案在地驗證資產之間的**架構分工、工作模式切換（MODE）、五階段閉環流程、實戰導入路線與護欄連動機制**。
 
 ---
 
@@ -16,6 +16,7 @@ flowchart TD
     L1 --> L2C["Layer 2C: 變更安全與回滾驗證\nchange-safety-and-verification"]
     L1 --> L2D["Layer 2D: 驗證槓桿與錯誤硬化\nverification-harness-builder"]
     L1 --> L2E["Layer 2E: 週期盤點與優化規劃\nweekly-project-review-and-roadmap"]
+    L1 --> L2F["Layer 2F: 發布打包與更新日誌\nrelease-packaging-and-changelog"]
     L2A --> L3["Layer 3: 專案在地驗證資產\ndocs/Feature_Map.md + .agents/skills/verify-<project>/"]
     L2D --> L3
     L2C --> L4["Layer 4: 自動化硬性門檻\nscripts/verify + .githooks/pre-commit + .agents/hooks.json"]
@@ -57,7 +58,7 @@ flowchart LR
 
 ---
 
-## 三、 8 大全域技能 ＋ 1 在地技能詳解
+## 三、 9 大全域技能 ＋ 1 在地技能詳解
 
 | 技能名稱 | 觸發時機與定位 | 搭配之關鍵模板 / 清單 | 核心防呆規則與連動 |
 |---|---|---|---|
@@ -69,6 +70,7 @@ flowchart LR
 | `change-safety-and-verification` | **變更安全與紀錄**：任何改碼實作、回滾備份與驗證結案強制調用 | `skills/change-safety-and-verification/resources/verification-template.md` | **Git 優先備份（嚴禁實體拷貝）**、最小純淨 Diff（Unslop）、`Change_Log` Append-Only、`Regression` vs `New Behavior` 證據分離 |
 | `verification-harness-builder` | **可執行槓桿與硬化**：開新/納管/升級專案、建置驗收腳本與重複錯誤升級 | `skills/verification-harness-builder/resources/feature-map-template.md`、`skills/verification-harness-builder/resources/verify-skill-template.md`、`skills/verification-harness-builder/resources/guardrail-snippets.md` | 為專案產出 `docs/Feature_Map.md` 與 `.agents/skills/verify-<project>/`，區分 `Doc Drift` vs `Product Bug`，推動 Prose → Guardrail 硬化 |
 | `weekly-project-review-and-roadmap` | **每週盤點與路線規劃**：週期進度彙整、缺口掃描、全專案優化排查與下週規劃 | `skills/weekly-project-review-and-roadmap/resources/weekly-review-template.md`、`skills/weekly-project-review-and-roadmap/resources/automation-prompt-guide.md`、`skills/weekly-project-review-and-roadmap/scripts/collect-weekly-snapshot.ps1` | 嚴守唯讀不改產品碼；先跑快照腳本彙整 Git/矩陣/`TODO`，再產出 `P0~P2` 優化清單與下週規劃（可搭配 `/automation` 存檔 `docs/weekly/YYYY-Www.md`） |
+| `release-packaging-and-changelog` | **發布打包與更新日誌**：軟體執行檔／RTL 燒錄檔發布門檻、版本相容與追溯 | `skills/release-packaging-and-changelog/resources/release-checklist.md`、`skills/release-packaging-and-changelog/resources/release-notes-template.md`、`skills/release-packaging-and-changelog/resources/release-manifest-example.json`、`skills/release-packaging-and-changelog/scripts/create-release-bundle.ps1` | Clean Worktree Gate；二進位輸出至 `.gitignore` 排除之發布包目錄；產出 `SHA256SUMS`、相容矩陣、Release Notes、Append-Only `Change_Log` 與 Annotated Tag |
 | `verify-antigravity-ide-auto-setting` | **本倉庫自我驗證（範例）**：修改本全域設定庫時執行之在地技能 | `scripts/verify-repo.ps1`、`.githooks/pre-commit`、`docs/Feature_Map.md` | 示範如何以自動化腳本＋負向夾具測試＋Pre-Commit Hook 守護規則庫本身不漂移 |
 
 ---
@@ -106,3 +108,12 @@ flowchart LR
 若專案需每週回顧成果、排查遺留缺口與制定下週計畫，可透過以下兩種模式執行 `weekly-project-review-and-roadmap`：
 1. **即時主動詢問**：在目標專案視窗提出「盤點本週進度、優化建議與下週規劃」，AI 先執行 `collect-weekly-snapshot.ps1` / `.sh` 取得近 7 天實證快照並實跑既有驗證槓桿，再對照領域清單產出 `P0/P1/P2` 優化項目與下週排程。
 2. **搭配 `/automation` 定時產出**：依 `skills/weekly-project-review-and-roadmap/resources/automation-prompt-guide.md` 建立每週背景排程（如 `CRON_TZ=Asia/Taipei 0 17 * * 5`），透過首次試跑授權唯讀命令後，每週自動將週報寫入目標專案 `docs/weekly/YYYY-Www.md`。
+
+---
+
+## 七、 版本發布打包、燒錄與執行檔追溯暨更新紀錄流程（SW + FW + RTL）
+
+當需要交付可執行軟體或 FPGA 燒錄檔時，`release-packaging-and-changelog` 負責把分散的編譯／綜合產物納入單一可追溯發布鏈：
+1. **Clean Gate 與雙軌版本對齊**：先確認無未提交工作區改動，核對軟體建置測試與內嵌版號、RTL STA（`WNS >= 0`、`TNS == 0`）與 `HW_VER`/`GIT_HASH` 暫存器，並誠實標記尚未上板實測之 `-rc.N` 狀態。
+2. **集中打包與校驗**：透過 `skills/release-packaging-and-changelog/scripts/create-release-bundle.ps1` / `.sh` 將交付物複製到不入 Git 歷史的本機發布資料夾，自動生成 `SHA256SUMS.txt`、`release-manifest.json` 與提交紀錄草稿。
+3. **日誌同步與 Annotated Tag**：將正式說明存檔於目標專案 `docs/releases/<Version>_Release_Notes.md`（含 SW↔FW↔RTL 相容表與快速退版 SOP），嚴格以 Append-Only 追加至 `Change_Log.md`，最後打上 Annotated Git Tag `vX.Y.Z`（並選擇性透過 `gh release` 上傳大型二進位產物）。
