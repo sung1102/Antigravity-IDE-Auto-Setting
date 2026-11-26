@@ -130,3 +130,14 @@ This file is strictly **APPEND ONLY**. Never reorder, delete, or rewrite histori
   - Added `scripts/sync-config.ps1` and `scripts/sync-config.sh` handling fresh installs, non-destructive in-place mounts (preserving `mcp_config.json`, `plugins/`, `projects/`, and user-built custom skills), and safe V1-to-V2 Git fast-forward upgrades (guarding local tracked edits with `-BackupOnLocalModify`).
   - Added `-TrackedOnly` switch to `scripts/verify-repo.ps1` so target machines with personal untracked skills pass verification cleanly, and added `sync-config.ps1`/`.sh` to SSOT index & Dogfooding checks.
   - Updated `README.md`, `GEMINI.md`, `docs/Feature_Map.md`, `docs/Architecture_and_Workflow.md`, and `templates/project-onboarding-prompts.md` (with Step 0 global-brain version pre-flight).
+
+
+---
+
+## [2026-11-26] Fix CP950/Big5 PowerShell UTF-8 Decoding Mismatch in Verify & Sync Scripts
+- **Type**: Bugfix / Windows Codepage Encoding Hardening
+- **Base Commit**: `6f95631`
+- **Details**:
+  - Created Git safety backup branch `backup/Antigravity-IDE-Auto-Setting_20261126_111432`.
+  - Fixed false-positive failure in `scripts/verify-repo.ps1` Check 6 (`Historical line 103 modified`) triggered on Taiwanese Windows PowerShell (`CP950`/`Big5`) where `git show HEAD:Change_Log.md` UTF-8 output (containing `U+2013` en-dash on line 103) was decoded as CP950.
+  - Added `Invoke-GitUtf8Text` (`System.Diagnostics.Process` with `StandardOutputEncoding = UTF8`) in `scripts/verify-repo.ps1` and set UTF-8 console/pipeline encoding guards in both `scripts/verify-repo.ps1` and `scripts/sync-config.ps1`.

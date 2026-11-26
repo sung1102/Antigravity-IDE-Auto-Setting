@@ -17,6 +17,15 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+try {
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [Console]::OutputEncoding = $utf8NoBom
+    $OutputEncoding = $utf8NoBom
+}
+catch {
+    # Ignore when running without an attached console handle
+}
+
 if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
     $scriptDir = if (-not [string]::IsNullOrWhiteSpace($PSScriptRoot)) {
         $PSScriptRoot
@@ -87,14 +96,44 @@ function Read-Utf8Lines {
     return , ($normalized -split "`n")
 }
 
+function Invoke-GitUtf8Text {
+    param(
+        [string]$RepoPath,
+        [string]$Arguments
+    )
+    $gitExe = (Get-Command git -ErrorAction Stop).Source
+    $psi = New-Object System.Diagnostics.ProcessStartInfo
+    $psi.FileName = $gitExe
+    $psi.Arguments = "-C `"$RepoPath`" $Arguments"
+    $psi.RedirectStandardOutput = $true
+    $psi.RedirectStandardError = $true
+    $psi.StandardOutputEncoding = [System.Text.Encoding]::UTF8
+    $psi.StandardErrorEncoding = [System.Text.Encoding]::UTF8
+    $psi.UseShellExecute = $false
+    $psi.CreateNoWindow = $true
+
+    $proc = New-Object System.Diagnostics.Process
+    $proc.StartInfo = $psi
+    [void]$proc.Start()
+    $errTask = $proc.StandardError.ReadToEndAsync()
+    $stdOut = $proc.StandardOutput.ReadToEnd()
+    $proc.WaitForExit()
+    [void]$errTask.GetAwaiter().GetResult()
+    return [PSCustomObject]@{
+        ExitCode = $proc.ExitCode
+        Output   = $stdOut
+    }
+}
+
 Write-Host "Running repository verification lever on: $RepoRoot" -ForegroundColor Cyan
 
 $trackedSet = $null
 if ($TrackedOnly) {
-    $trackedList = @(& git -C $RepoRoot -c core.quotepath=false ls-files)
-    if ($LASTEXITCODE -ne 0) {
+    $lsRes = Invoke-GitUtf8Text -RepoPath $RepoRoot -Arguments '-c core.quotepath=false ls-files'
+    if ($lsRes.ExitCode -ne 0) {
         throw "Failed to list tracked files with git ls-files on $RepoRoot"
     }
+    $trackedList = $lsRes.Output -split "`r?`n"
     $trackedSet = New-Object System.Collections.Generic.HashSet[string] ([System.StringComparer]::OrdinalIgnoreCase)
     foreach ($tp in $trackedList) {
         if (-not [string]::IsNullOrWhiteSpace($tp)) {
@@ -315,12 +354,12 @@ else {
         Add-CheckResult -Name 'Change_Log Append-Only' -Passed $false -Detail 'Git repository not detected for append-only verification'
     }
     else {
-        $headRaw = (& git -C $RepoRoot show 'HEAD:Change_Log.md' 2>$null) -join "`n"
-        if ($LASTEXITCODE -ne 0) {
+        $showRes = Invoke-GitUtf8Text -RepoPath $RepoRoot -Arguments 'show HEAD:Change_Log.md'
+        if ($showRes.ExitCode -ne 0) {
             Add-CheckResult -Name 'Change_Log Append-Only' -Passed $false -Detail 'Unable to read HEAD:Change_Log.md'
         }
         else {
-            $headNorm = ($headRaw -replace "`r`n", "`n" -replace "`r", "`n").TrimEnd("`n")
+            $headNorm = ($showRes.Output -replace "`r`n", "`n" -replace "`r", "`n").TrimEnd("`n")
             $headLines = if ($headNorm.Length -eq 0) { @() } else { , ($headNorm -split "`n") }
             $currLines = Read-Utf8Lines -Path $changeLogPath
             $appendOk = $true
